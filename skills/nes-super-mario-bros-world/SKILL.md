@@ -167,16 +167,31 @@ second.
 Only when the user asks. These are memory writes, so see Ask first. Start the
 game so `0x0772` is `03`, then write:
 
-1. `0x075F` = world (0-based), `0x075C` = level (0-based), `0x0760` = `00`.
-2. `0x0750` = the level's area ID. Bits 5-6 give the area type (`00` water,
-   `20` ground, `40` underground, `60` castle). `00` loads a water level and
-   leaves a stale ID from the previous level, so always write it.
-3. `0x0772` = `00`, then `RUN_FRAMES 240` and check with `SCREENSHOT`.
+1. `0x075F` = world (0-based), `0x0760` = the area's index in that world's
+   list below.
+2. `0x0750` = the area ID from the list below. `00` loads a water level, and
+   a stale ID loads the wrong level, so always write it.
+3. `0x0772` = `00`, then `RUN_FRAMES 240`.
+4. The load resets `0x075C` (level) to `00`, so write the level (0-based)
+   again afterwards or the HUD shows `x-1`.
 
-Verified: 5-1 is world `04`, level `00`, area ID `2D`: a night level that
-starts beside a castle. Other area IDs are unverified; try ground IDs near
-`20`-`2F` and check the HUD and screenshot. The HUD shows the world from
-`0x075F` even when the wrong level loaded.
+Area IDs per world, in `0x0760` order (from the ROM at file offset `0x1CC4`;
+the HUD is unreliable, so confirm with `SCREENSHOT`):
+
+| World | IDs |
+| ----- | --- |
+| 1 | `25 29 C0 26 60` |
+| 2 | `28 29 01 27 62` |
+| 3 | `24 35 20 63` |
+| 4 | `22 29 41 2C 61` |
+| 5 | `2A 31 26 62` |
+| 6 | `2E 23 2D 60` |
+| 7 | `33 29 01 27 64` |
+| 8 | `30 32 21 65` |
+
+Worked so far: 4-3 is world `03`, index `03`, ID `2C` (giant mushroom
+platforms with red Koopas). Which entries are bonus or sub-areas is not
+confirmed; check the screenshot.
 
 ## Ask first
 
