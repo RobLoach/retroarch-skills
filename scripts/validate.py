@@ -16,6 +16,43 @@ SKILLS = ROOT / "skills"
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 CRC_RE = re.compile(r"^[0-9a-fA-F]{8}$")
 CORE_RE = re.compile(r"^[a-z0-9_+-]+_libretro$")
+# Directory prefix for each libretro-database system. Add a system here
+# before its first skill.
+SYSTEM_CODES = {
+    "Atari - 2600": "a2600",
+    "Atari - 7800": "a7800",
+    "Atari - Lynx": "lynx",
+    "Bandai - WonderSwan": "ws",
+    "Bandai - WonderSwan Color": "wsc",
+    "Coleco - ColecoVision": "coleco",
+    "Commodore - 64": "c64",
+    "Microsoft - MSX": "msx",
+    "Microsoft - MSX2": "msx2",
+    "NEC - PC Engine - TurboGrafx 16": "pce",
+    "NEC - PC Engine CD - TurboGrafx-CD": "pcecd",
+    "NEC - PC Engine SuperGrafx": "sgx",
+    "Nintendo - Family Computer Disk System": "fds",
+    "Nintendo - Game Boy": "gb",
+    "Nintendo - Game Boy Advance": "gba",
+    "Nintendo - Game Boy Color": "gbc",
+    "Nintendo - Nintendo 64": "n64",
+    "Nintendo - Nintendo DS": "nds",
+    "Nintendo - Nintendo Entertainment System": "nes",
+    "Nintendo - Super Nintendo Entertainment System": "snes",
+    "Nintendo - Virtual Boy": "vb",
+    "Sega - 32X": "32x",
+    "Sega - Game Gear": "gg",
+    "Sega - Master System - Mark III": "sms",
+    "Sega - Mega Drive - Genesis": "md",
+    "Sega - Mega-CD - Sega CD": "segacd",
+    "Sega - SG-1000": "sg1000",
+    "Sega - Saturn": "saturn",
+    "SNK - Neo Geo Pocket": "ngp",
+    "SNK - Neo Geo Pocket Color": "ngpc",
+    "Sony - PlayStation": "psx",
+    "Sony - PlayStation Portable": "psp",
+}
+
 # RetroArch MCP tools marked destructive, plus loading content over a
 # running game. Skills must not pre-approve them.
 DESTRUCTIVE = {
@@ -104,12 +141,16 @@ def check(skill, seen):
     system = metadata.get("system", "")
     cores = metadata.get("cores", "").split()
     crc32 = metadata.get("crc32")
-    if not game:
-        errors.append("metadata.game is missing")
-    elif slug != slugify(game) and not slug.startswith(slugify(game) + "-"):
-        errors.append(f"directory should be {slugify(game)!r}, the slug of metadata.game")
     if not system:
         errors.append("metadata.system is missing")
+    elif system not in SYSTEM_CODES:
+        errors.append(f"metadata.system {system!r} has no code; add one to SYSTEM_CODES in scripts/validate.py")
+    if not game:
+        errors.append("metadata.game is missing")
+    elif system in SYSTEM_CODES:
+        expected = SYSTEM_CODES[system] + "-" + slugify(game)
+        if slug != expected:
+            errors.append(f"directory should be {expected!r}: the system code, a hyphen, and the slug of metadata.game")
     for core in cores:
         if not CORE_RE.match(core):
             errors.append(f"metadata.cores: {core!r} is not a core name such as fceumm_libretro")

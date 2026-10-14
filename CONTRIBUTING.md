@@ -20,7 +20,8 @@ Start with the game's exact [No-Intro](https://no-intro.org) name, as listed in
 [libretro-database](https://github.com/libretro/libretro-database), for example
 `Super Mario Bros. (World)`.
 
-To get the directory name and the `name` field, slug the No-Intro name:
+The directory name and the `name` field are the system's code, a `-`, and the
+slug of the No-Intro name. To slug the name:
 
 1. Convert accented letters to plain ASCII (`Pokémon` becomes `pokemon`).
 2. Lowercase it.
@@ -28,15 +29,18 @@ To get the directory name and the `name` field, slug the No-Intro name:
 4. Replace each run of other non-alphanumeric characters with a single `-`.
 5. Trim leading and trailing `-`.
 
-| No-Intro name | Slug |
-| --- | --- |
-| `Super Mario Bros. (World)`| `super-mario-bros-world` |
-| `Legend of Zelda, The (USA)` | `legend-of-zelda-the-usa` |
-| `Kirby's Adventure (USA) (Rev 1)` | `kirbys-adventure-usa-rev-1` |
-| `Sonic The Hedgehog (USA, Europe)` | `sonic-the-hedgehog-usa-europe` |
+| System | No-Intro name | Directory |
+| --- | --- | --- |
+| `Nintendo - Nintendo Entertainment System` | `Super Mario Bros. (World)` | `nes-super-mario-bros-world` |
+| `Nintendo - Nintendo Entertainment System` | `Legend of Zelda, The (USA)` | `nes-legend-of-zelda-the-usa` |
+| `Nintendo - Nintendo Entertainment System` | `Kirby's Adventure (USA) (Rev 1)` | `nes-kirbys-adventure-usa-rev-1` |
+| `Sega - Mega Drive - Genesis` | `Sonic The Hedgehog (USA, Europe)` | `md-sonic-the-hedgehog-usa-europe` |
 
-If two systems share a No-Intro name, add a short system suffix to the slug,
-for example `tetris-world-gb`.
+The codes are in `SYSTEM_CODES` in
+[`scripts/validate.py`](scripts/validate.py), such as `nes`, `snes`, `gb`,
+`gba`, `md` and `psx`. For a system that isn't listed yet, add a short code
+there. The prefix keeps games that share a name on different systems apart:
+`Pac-Man (USA)` is a No-Intro name on five systems.
 
 The [Agent Skills spec](https://agentskills.io/specification) requires these
 rules. A skill's `name` must be lowercase letters, numbers, and hyphens, and it
@@ -50,7 +54,7 @@ General skills that aren't about one game, such as `create-game-skill`, have no
 
 ```yaml
 ---
-name: super-mario-bros-world
+name: nes-super-mario-bros-world
 description: Plays Super Mario Bros. (World) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Super Mario Bros. (World) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.

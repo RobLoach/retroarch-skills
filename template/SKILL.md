@@ -1,5 +1,5 @@
 ---
-name: game-title-region
+name: system-game-title-region
 description: Plays <Game Title> on the <System> through RetroArch's MCP server. Use when GET_STATUS reports <Game Title> or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.

@@ -9,7 +9,14 @@ for state such as lives or position, and how to play it well.
 
 For a game without a skill, ask the assistant to create one. The
 `create-game-skill` skill has it work these out by experiment and write a new
-skill. See the [skills](skills) directory for added games.
+skill.
+
+## Games
+
+### Nintendo - Nintendo Entertainment System
+
+- [Kirby's Adventure (USA) (Rev 1)](skills/nes-kirbys-adventure-usa-rev-1/SKILL.md)
+- [Super Mario Bros. (World)](skills/nes-super-mario-bros-world/SKILL.md)
 
 ## Requirements
 
@@ -99,16 +106,18 @@ Load a game in RetroArch, then ask the assistant to play it:
 skills/
   create-game-skill/
     SKILL.md
-  super-mario-bros-world/
+  nes-kirbys-adventure-usa-rev-1/
+    SKILL.md
+  nes-super-mario-bros-world/
     SKILL.md
 ```
 
-Directory names are slugs of the game's
-[No-Intro](https://no-intro.org) name, which is the name RetroArch's database
-uses. The exact name and the system are stored in the skill's frontmatter,
-next to the cores the skill works with, so a running game can be matched to
-its skill. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for the full conventions.
+Directory names are a short system code (`nes`, `snes`, `gba`, ...) and a slug
+of the game's [No-Intro](https://no-intro.org) name, which is the name
+RetroArch's database uses. The exact name and the system are stored in the
+skill's frontmatter, next to the cores the skill works with, so a running game
+can be matched to its skill. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full conventions.
 
 ## Contributing
 

@@ -81,13 +81,17 @@ Rules:
 ## Write the skill
 
 Follow the [template](../../template/SKILL.md) and
-[CONTRIBUTING.md](../../CONTRIBUTING.md): frontmatter with `name`, `description`, and `metadata` (`game`,
-`system`, `cores`, optional `crc32`), then the sections Confirm the game,
-Setup, Controls, Memory, Playing, Pitfalls and Ask first.
+[CONTRIBUTING.md](../../CONTRIBUTING.md): frontmatter with `name`,
+`description`, `license`, `compatibility` and `allowed-tools` (copy the last
+three from the template), and `metadata` (`game`, `system`, `cores`, optional
+`crc32`), then the sections Confirm the game, Setup, Controls, Memory,
+Playing, Pitfalls and Ask first.
 
-- Name the directory with the slug of the game's No-Intro name. Write it to
-  `skills/<slug>/` when working in the repository, otherwise to
-  `~/.claude/skills/<slug>/`.
+- Name the directory, and the `name` field, with the system's code, a `-`, and
+  the slug of the game's No-Intro name, such as `nes-super-mario-bros-world`.
+  The codes are in `SYSTEM_CODES` in `scripts/validate.py`; add one for a new
+  system. Write the skill to `skills/<name>/` when working in the repository,
+  otherwise to `~/.claude/skills/<name>/`.
 - Include only what you verified. Tell the user what you didn't test, rather
   than guessing in the skill.
 - In the repository, run `python3 scripts/validate.py`.

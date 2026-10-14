@@ -1,5 +1,5 @@
 ---
-name: kirbys-adventure-usa-rev-1
+name: nes-kirbys-adventure-usa-rev-1
 description: Plays Kirby's Adventure (USA) (Rev 1) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Kirby's Adventure (USA) (Rev 1) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
