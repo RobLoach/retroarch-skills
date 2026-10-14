@@ -161,6 +161,10 @@ second.
   40 frames and press Start again.
 - Check the enemy gaps before saving: a save taken with an enemy within about
   12 pixels reloads straight into a death.
+- 2-3 is a chain of bridges between brick pillars, with gaps up to about
+  100 pixels. Mario can't jump once `0x001D` is `02` (walked off), so take
+  off from the very end of the bridge, and save a state (990-999) at each
+  landing so a miss costs seconds, not the level.
 
 ## Warping to a level
 
@@ -193,9 +197,16 @@ Checked: all 35 entries load, and `0x074E` always matches the ID's type bits
 `C0` is the underground 1-2 start, `01` is water, `60`-`65` are castles, `41`
 is underground, `2C` is giant mushroom platforms with red Koopas.
 
-Not confirmed: the level name behind each ID (the table order is only a
-guess), and why `0x0750` read `C2` after loading `25`. The HUD is unreliable
-after a warp, so check with `SCREENSHOT`. Nothing was played to the flagpole.
+Confirmed by playing: warping to 2-3 (world `01`, index `03`, level `02`, ID
+`27`) and finishing it made the game advance to 2-4 on its own with index
+`04`, level `03`, ID `62` (castle), so World 2's row is right in order.
+
+Not confirmed: the level name behind the other IDs (the table order is only
+a guess), and why `0x0750` read `C2` after loading `25`. The HUD is
+unreliable after a warp, so check with `SCREENSHOT`.
+
+Warped levels start with the HUD of the previous level; it corrects itself
+after a death or the next level load.
 
 ## Ask first
 
