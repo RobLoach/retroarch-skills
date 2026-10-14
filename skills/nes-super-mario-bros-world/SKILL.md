@@ -162,6 +162,22 @@ second.
 - Check the enemy gaps before saving: a save taken with an enemy within about
   12 pixels reloads straight into a death.
 
+## Warping to a world
+
+Only when the user asks. These are memory writes, so see Ask first. Start the
+game so `0x0772` is `03`, then write:
+
+1. `0x075F` = world (0-based), `0x075C` = level (0-based), `0x0760` = `00`.
+2. `0x0750` = the level's area ID. Bits 5-6 give the area type (`00` water,
+   `20` ground, `40` underground, `60` castle). `00` loads a water level and
+   leaves a stale ID from the previous level, so always write it.
+3. `0x0772` = `00`, then `RUN_FRAMES 240` and check with `SCREENSHOT`.
+
+Verified: 5-1 is world `04`, level `00`, area ID `2D`: a night level that
+starts beside a castle. Other area IDs are unverified; try ground IDs near
+`20`-`2F` and check the HUD and screenshot. The HUD shows the world from
+`0x075F` even when the wrong level loaded.
+
 ## Ask first
 
 Save and load only the AI Agent save slots, 990-999, and never touch any
