@@ -1,0 +1,13 @@
+{
+  "name": "retroarch-skills",
+  "owner": {
+    "name": "Rob Loach"
+  },
+  "plugins": [
+    {
+      "name": "retroarch-skills",
+      "source": "./",
+      "description": "Skills for playing games through RetroArch's MCP server, and for creating new game skills."
+    }
+  ]
+}
