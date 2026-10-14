@@ -40,10 +40,18 @@ claude mcp add --transport http retroarch http://localhost:55357/mcp \
   --header "Authorization: Bearer choose-a-secret"
 ```
 
-Name the server `retroarch`. The skills pre-approve tools such as
-`mcp__retroarch__PRESS` by that name, so under another name every call
-prompts for permission. Tools that can lose progress, such as `RESET` and the
-save state tools, always prompt.
+Or edit within your `~/.claude.json` MCP configuration settings:
+```json
+  "mcpServers": {
+    "retroarch": {
+      "type": "http",
+      "url": "http://localhost:55357/mcp",
+      "headers": {
+        "Authorization": "Bearer choose-a-secret"
+      }
+    }
+  }
+```
 
 ### 3. Install the skills
 
