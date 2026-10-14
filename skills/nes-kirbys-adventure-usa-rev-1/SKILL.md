@@ -52,8 +52,7 @@ places system RAM at `0x0000`-`0x07FF` and cartridge RAM at
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
   `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`. The core splits RAM into 0x400-byte
   regions, and a read stops at the end of a region, so never read across a
-  multiple of `0x400`. Then read `0x0597` in play: it is `2F` at full
-  health. If either check fails, tell the user.
+  multiple of `0x400`. If the map is missing or short, tell the user.
 
 The game keeps running after `LOAD_CONTENT`, and after a few seconds an
 attract demo shows Kirby playing. Don't take that for gameplay.

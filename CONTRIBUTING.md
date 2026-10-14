@@ -6,11 +6,12 @@ server. To add a game:
 1. Load the game in RetroArch, and ask the assistant to create a skill for
    it. The [`create-game-skill`](skills/create-game-skill/SKILL.md) skill
    has it work out the controls, memory addresses and a memory signature by
-   experiment, then write `skills/<slug>/SKILL.md` from the
-   [template](template/SKILL.md). To write one by hand instead, copy the
-   template and fill it in.
+   experiment, then write `skills/<name>/SKILL.md` from its
+   [template](skills/create-game-skill/assets/template.md). To write one by
+   hand instead, copy the template and fill it in.
 2. Read what it wrote, and test it against the real game. Check anything the
-   assistant says it didn't verify.
+   assistant says it didn't verify. Make sure the game is in the Games list
+   in `README.md`, under its system.
 3. Run `python3 scripts/validate.py`.
 4. Open a pull request.
 
@@ -29,12 +30,12 @@ slug of the No-Intro name. To slug the name:
 4. Replace each run of other non-alphanumeric characters with a single `-`.
 5. Trim leading and trailing `-`.
 
-| System | No-Intro name | Directory |
+| Code | No-Intro name | Directory |
 | --- | --- | --- |
-| `Nintendo - Nintendo Entertainment System` | `Super Mario Bros. (World)` | `nes-super-mario-bros-world` |
-| `Nintendo - Nintendo Entertainment System` | `Legend of Zelda, The (USA)` | `nes-legend-of-zelda-the-usa` |
-| `Nintendo - Nintendo Entertainment System` | `Kirby's Adventure (USA) (Rev 1)` | `nes-kirbys-adventure-usa-rev-1` |
-| `Sega - Mega Drive - Genesis` | `Sonic The Hedgehog (USA, Europe)` | `md-sonic-the-hedgehog-usa-europe` |
+| `nes` | `Super Mario Bros. (World)` | `nes-super-mario-bros-world` |
+| `nes` | `Legend of Zelda, The (USA)` | `nes-legend-of-zelda-the-usa` |
+| `nes` | `Kirby's Adventure (USA) (Rev 1)` | `nes-kirbys-adventure-usa-rev-1` |
+| `md` | `Sonic The Hedgehog (USA, Europe)` | `md-sonic-the-hedgehog-usa-europe` |
 
 The codes are in `SYSTEM_CODES` in
 [`scripts/validate.py`](scripts/validate.py), such as `nes`, `snes`, `gb`,
@@ -67,7 +68,7 @@ metadata:
 ---
 ```
 
-- `name`: the slug.
+- `name`: the system code, a `-`, and the slug, matching the directory.
 - `description`: one line, at most 1024 characters. Say what the skill does,
   then when to use it. The assistant sees only this text when it decides
   whether to load the skill.
@@ -92,10 +93,10 @@ metadata:
   digits. "Confirm the game" checks the name and a memory signature. An
   assistant that can read the ROM file, found through the system playlist,
   also compares CRCs when the name differs or the memory can't be read. It
-  asks the user only when it can verify neither. For
-  formats with a header, such as `.nes`, give the CRC without the header,
-  because headers differ between dumps of the same ROM. Say in "Confirm the
-  game" how many bytes to skip.
+  asks the user only when it can verify neither. For formats with a header,
+  such as `.nes`, give the CRC without the header, because headers differ
+  between dumps of the same ROM. Say in "Confirm the game" how many bytes to
+  skip.
 
 Keep every value on one line. The validator does not parse multi-line YAML.
 
@@ -114,8 +115,8 @@ Keep every value on one line. The validator does not parse multi-line YAML.
   `right`, `right+a`), not as the original console's button labels.
 - **Read state, don't guess it.** An addresses table beats screenshots. List
   each address with its size and meaning.
-- **Save states use the AI Agent save slots, 990-999, only.** Skills share them, so
-  the player's own slots are never touched.
+- **Save states use the AI Agent save slots, 990-999, only.** Skills share
+  them, so the player's own slots are never touched.
 - **Mark destructive steps.** `RESET`, `CLOSE_CONTENT`, and
   `WRITE_CORE_MEMORY` can lose the player's progress. Tell the assistant to ask
   first.
@@ -129,5 +130,5 @@ Keep every value on one line. The validator does not parse multi-line YAML.
 python3 scripts/validate.py
 ```
 
-The validator checks names, frontmatter, and duplicate games. CI runs it on
-every pull request.
+The validator checks names, frontmatter, duplicate games, and that every game
+is in the README's Games list. CI runs it on every pull request.

@@ -104,7 +104,7 @@ def frontmatter(text):
     return data
 
 
-def check(skill, seen):
+def check(skill, seen, listed):
     errors = []
     slug = skill.parent.name
     data = frontmatter(skill.read_text(encoding="utf-8"))
@@ -162,14 +162,33 @@ def check(skill, seen):
         if key in seen:
             errors.append(f"same game and system as {seen[key]}")
         seen[key] = slug
+        if slug not in listed:
+            errors.append(f"not in README.md's Games list; add it under '### {system}'")
+        elif listed[slug] != system:
+            errors.append(f"listed in README.md under '### {listed[slug]}', not '### {system}'")
     return errors
+
+
+def readme_games():
+    """Map each skill linked in README.md's Games section to its ### heading."""
+    listed, heading, inside = {}, None, False
+    for line in (ROOT / "README.md").read_text(encoding="utf-8").splitlines():
+        if line.startswith("## "):
+            inside = line.strip() == "## Games"
+        elif inside and line.startswith("### "):
+            heading = line[4:].strip()
+        elif inside:
+            for slug in re.findall(r"\(skills/([^/)]+)/SKILL\.md\)", line):
+                listed[slug] = heading
+    return listed
 
 
 def main():
     skills = sorted(SKILLS.glob("*/SKILL.md"))
     seen, failed = {}, 0
+    listed = readme_games()
     for skill in skills:
-        errors = check(skill, seen)
+        errors = check(skill, seen, listed)
         for error in errors:
             print(f"{skill.relative_to(ROOT)}: {error}")
         failed += bool(errors)

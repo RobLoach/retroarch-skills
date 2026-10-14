@@ -11,7 +11,7 @@ metadata:
   crc32: "00000000"
 ---
 
-# <Game Title>
+# <Game Title, without region or revision>
 
 <One or two sentences: what the game is and what the player is trying to do.>
 
@@ -47,9 +47,8 @@ Any core that publishes a memory map with <the RAM this skill reads> works.
   the list above.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering <the RAM
   this skill reads>. A read stops at the end of a region, so keep each read
-  inside one. Then read <an address with a known value>: it is <the value> <in
-  a situation you can recognize>. If either check fails, tell the user and
-  suggest one of the cores above.
+  inside one. If the map is missing or short, tell the user and suggest one
+  of the cores above.
 
 <How to get from boot to gameplay: frames to wait, buttons to press, and the
 memory value that confirms play has started.>

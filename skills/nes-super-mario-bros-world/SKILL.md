@@ -11,7 +11,7 @@ metadata:
   crc32: "D445F698"
 ---
 
-# Super Mario Bros. (World)
+# Super Mario Bros.
 
 A side-scrolling platformer: run right through each level, avoid or stomp
 enemies, clear pits and pipes, and touch the flagpole at the end.
@@ -50,9 +50,8 @@ Any NES core works if it publishes a memory map with system RAM at `0x0000`.
   list above.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
   `0x0000`-`0x07FF`. A read stops at the end of a region, so keep each read
-  inside one; fceumm splits RAM at `0x0400`. Then read `0x0770`: it is `00` on
-  the title screen and `01` once a game starts. If either check fails, tell
-  the user and suggest one of the cores above.
+  inside one; fceumm splits RAM at `0x0400`. If the map is missing or short,
+  tell the user and suggest one of the cores above.
 
 To start: `RUN_FRAMES 120`, `PRESS start 4`, `RUN_FRAMES 200`, then read
 `0x0770`. The first Start after loading is often dropped; if it is still `00`,

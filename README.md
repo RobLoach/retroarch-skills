@@ -48,6 +48,7 @@ claude mcp add --transport http retroarch http://localhost:55357/mcp \
 ```
 
 Or edit within your `~/.claude.json` MCP configuration settings:
+
 ```json
   "mcpServers": {
     "retroarch": {
@@ -60,29 +61,35 @@ Or edit within your `~/.claude.json` MCP configuration settings:
   }
 ```
 
+Name the server `retroarch`. The skills pre-approve tools such as
+`mcp__retroarch__PRESS` by that name, so under another name every call
+prompts for permission. Tools that can lose progress, such as `RESET` and the
+save state tools, always prompt.
+
 ### 3. Install the skills
 
 As a Claude Code plugin:
 
 ```text
-/plugin marketplace add RobLoach/retroarch-skills
+/plugin marketplace add robloach/retroarch-skills
 /plugin install retroarch-skills@retroarch-skills
 ```
 
 Or with `skills`:
 
-```
+```sh
 npx skills add robloach/retroarch-skills
 ```
 
 Or GitHub CLI:
 
-```
+```sh
 gh skill install robloach/retroarch-skills --scope user
 ```
 
-Alternatively, manually copy individual skill directories from [`skills/`](skills/) into
-`~/.claude/skills/`, or into the skills directory of another agent.
+Alternatively, manually copy individual skill directories from
+[`skills/`](skills/) into `~/.claude/skills/`, or into the skills directory of
+another agent.
 
 ## Usage
 
@@ -106,6 +113,8 @@ Load a game in RetroArch, then ask the assistant to play it:
 skills/
   create-game-skill/
     SKILL.md
+    assets/
+      template.md
   nes-kirbys-adventure-usa-rev-1/
     SKILL.md
   nes-super-mario-bros-world/
@@ -121,9 +130,11 @@ full conventions.
 
 ## Contributing
 
-New game skills are welcome. Start from
-[`template/SKILL.md`](template/SKILL.md) and read
-[CONTRIBUTING.md](CONTRIBUTING.md).
+New game skills are welcome. Load the game, ask the assistant to create a
+skill for it with `create-game-skill`, then test what it wrote. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the conventions, and
+[the template](skills/create-game-skill/assets/template.md) to write one by
+hand.
 
 ## License
 

@@ -80,20 +80,25 @@ Rules:
 
 ## Write the skill
 
-Follow the [template](../../template/SKILL.md) and
-[CONTRIBUTING.md](../../CONTRIBUTING.md): frontmatter with `name`,
-`description`, `license`, `compatibility` and `allowed-tools` (copy the last
-three from the template), and `metadata` (`game`, `system`, `cores`, optional
-`crc32`), then the sections Confirm the game, Setup, Controls, Memory,
-Playing, Pitfalls and Ask first.
+Follow the [template](assets/template.md), and in the repository also
+`CONTRIBUTING.md`: frontmatter with `name`, `description`, `license`,
+`compatibility` and `allowed-tools` (copy the last three from the template),
+and `metadata` (`game`, `system`, `cores`, optional `crc32`), then the
+sections Confirm the game, Setup, Controls, Memory, Playing, Pitfalls and Ask
+first.
 
 - Name the directory, and the `name` field, with the system's code, a `-`, and
   the slug of the game's No-Intro name, such as `nes-super-mario-bros-world`.
-  The codes are in `SYSTEM_CODES` in `scripts/validate.py`; add one for a new
-  system. Write the skill to `skills/<name>/` when working in the repository,
-  otherwise to `~/.claude/skills/<name>/`.
+  Common codes: `nes`, `snes`, `n64`, `gb`, `gbc`, `gba`, `nds`, `md`, `sms`,
+  `gg`, `pce`, `psx`. In the repository, the full list is `SYSTEM_CODES` in
+  `scripts/validate.py`; add one for a new system. Write the skill to
+  `skills/<name>/` when working in the repository, otherwise to
+  `~/.claude/skills/<name>/`.
 - Include only what you verified. Tell the user what you didn't test, rather
   than guessing in the skill.
+- In the repository, add the game to the Games list in `README.md`, under a
+  `###` heading with its `metadata.system` name, in alphabetical order. Link
+  the No-Intro name to the new `SKILL.md`.
 - In the repository, run `python3 scripts/validate.py`.
 - Tell the user how many screenshots you took, and which AI Agent save
   slots hold your saves.
