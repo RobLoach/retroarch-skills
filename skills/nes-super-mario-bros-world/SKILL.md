@@ -3,7 +3,7 @@ name: nes-super-mario-bros-world
 description: Plays Super Mario Bros. (World) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Super Mario Bros. (World) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT
 metadata:
   game: "Super Mario Bros. (World)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -23,7 +23,8 @@ Call `GET_STATUS`. Its reply should name `nes` and
 
 Then read `0x07FF`, 1 byte. The game writes `A5` there at power-on and keeps
 it through the title screen, the demo and play; Kirby's Adventure, for one,
-leaves `FF`.
+leaves `FF`. Run some frames first: after `LOAD_CONTENT` with `paused` on,
+RAM reads `FF` everywhere until the first frame has run.
 
 - Memory matches: go on. If the name differs, the ROM is probably renamed:
   run the CRC check if you can, and tell the user what you found.
@@ -58,7 +59,12 @@ To start: `RUN_FRAMES 120`, `PRESS start 4`, `RUN_FRAMES 200`, then read
 press Start again. `0x0770` turns `01` during the "WORLD 1-1" card, before
 Mario can move. Play has begun when `0x0772` is `03` and `0x000E` is `08`,
 about 180 frames after Start. Don't judge by position: Mario's X is `0x28` on
-the title screen too.
+the title screen too, and `0x000E` is already `08` there.
+
+With `PRESS ... until` and `RUN_UNTIL`, starting takes three calls:
+`RUN_FRAMES 120`, `PRESS 1 start 4 until "770 == 1"`, then `RUN_UNTIL e == 8`.
+Only wait for `e == 8` once `0x0770` is `01`, because of the title screen
+value above. One condition can't check `0x0772` as well.
 
 ## Controls
 
@@ -74,6 +80,14 @@ the title screen too.
 Read these with `READ_CORE_MEMORY`. Addresses are system addresses, as listed by
 `GET_MEMORY_MAP`. Read each array in one call (`0x0087`, 5 bytes), not as one
 large dump.
+
+Better, `WATCH` the ones you need once, so every step answers with them and
+needs no reads after it. One call covers Mario and four enemy slots:
+`st e air 1d x 6d:86 y ce vs b5 spd 57 e0 f e0x 6e:87 e1 10 e1x 6f:88 e2 11
+e2x 70:89 e3 12 e3x 71:8a`. Watched values come back in decimal, while this
+table is in hex: `57` running shows `40` (`0x28`), and `ce` on the ground
+shows `176` (`0xB0`). A slot that isn't active keeps a stale X, so trust an
+enemy's X only while its `0x000F` flag is `01`.
 
 | Address | Bytes | Meaning |
 | ------- | ----- | ------- |
@@ -103,6 +117,7 @@ large dump.
 | `0x0756` | 1 | Power-up: 0 small, 1 big (2 blocks tall), 2 fire |
 | `0x075A` | 1 | Lives minus one (`00` = last life) |
 | `0x075F`, `0x075C` | 1, 1 | World, level (0-based) |
+| `0x0760` | 1 | Area index within the world, as in the warp table. It changes when the next level loads, so it marks a clear: `00` to `01` after 1-1, about 640 frames after the flag |
 
 The terrain is a tile map at `0x0500`: two screens of 16 columns by 13 rows.
 Screen `n` starts at `0x0500 + (n & 1) * 0xD0`; the tile at row `r`, column
@@ -122,12 +137,38 @@ Loop: read Mario and enemy positions, decide, `PRESS`, read again to check.
 Gap = enemy absolute X - Mario absolute X. Times are in frames at 60 per
 second.
 
+Cheaper: with the `WATCH` above, `SET_INPUT 1 right+b 1` once to keep running
+right, and play each obstacle as one `STEPS` call. Its reply carries the
+watched values, so no read is needed after it:
+
+```
+until 6d:86 >= 412; press 1 a 20; until 1d == 0; stop e == 11; stop b5 > 1
+```
+
+- Always add `stop e == 11; stop b5 > 1`. A death then stops the call within
+  a few frames instead of running on.
+- `stop f == 1` (or `10 == 1` and so on) stops when an enemy slot spawns. It's
+  a cheap way to learn where the next enemies are before committing.
+- Several obstacles can go in one list, and a replay after a rollback is
+  deterministic.
+- Hold or release `right+b` with `SET_INPUT` and `RELEASE_INPUT`, not inside
+  `STEPS`. It stays held through `STATE rollback`.
+- `STATE checkpoint` before each enemy group. `STATE rollback` and one replay
+  `STEPS` then cost two calls after a death, and touch no save slot.
+- `RUN_UNTIL` and `STEPS` run 540 frames per request at most. Ask again when
+  the reply says `waiting`.
+
+Played this way, World 1-1 took 48 calls to the flagpole.
+
 - **Stomp:** stand still, with `0x0057` at `00`. When an approaching enemy's
   gap is 18-22, `PRESS a 12`, `RUN_FRAMES 24`, then check its state is `04`.
   The stomp lands when Mario's hitbox bottom (y2) reaches the enemy's top (y1)
   while they overlap in X and `0x009F` is positive (falling). For two Goombas
   close together, a running jump over both is safer than stomping.
-- **Jump over:** while walking, at gap ~50, `PRESS right+a 20-32`.
+- **Jump over:** while walking, at gap ~50, `PRESS right+a 20-32`. While
+  running (`0x0057` at `28`), a hop of `a 10-14` at gap 45-60 clears one
+  Goomba or a pair. The four Goombas around X 1950-2030 in 1-1 need a full
+  jump (`a 24` from X 1912): short hops land among them.
 - **Pipe, wall or stairs:** walk into it, then `PRESS right+a 32-35`. That
   clears 4 blocks; repeat to climb.
 - **Pit:** 2 wide, a walking full jump from the edge. 3 wide,
@@ -141,6 +182,10 @@ second.
 - **Flagpole:** from the top step of the last staircase, `PRESS right+b 8`,
   `PRESS right+b+a 30`, `PRESS right+b 40`. Done when `0x001D` is `03` or
   `0x000E` is `04` or `05`; a grab near the bottom of the pole skips `03`.
+  In 1-1 the last staircase can be climbed and the pole reached in one call
+  from its third step (Y `0x80`), holding `right+b`:
+  `press 1 a 30; until 1d == 0; press 1 a 30; until 1d == 0; stop 1d == 3`.
+  That grabbed the pole at Y `0x3B`.
 
 ## Pitfalls
 
@@ -148,6 +193,11 @@ second.
   standing still.
 - Blocks 3 up leave little headroom: a full jump under them bonks and drops
   Mario short.
+- Pressing `a` while `0x001D` is `02` (walked off a ledge) does nothing. After
+  stepping off blocks or a pipe, wait for `1d == 0` before the jump.
+- `1d == 0` also means landing on top of blocks: a hop near `?` blocks can
+  leave Mario on them, with `0x00CE` at `70`. Check Y before assuming he is on
+  the ground.
 - A Goomba falling off a platform is dangerous until its Y is `B8`.
 - Goombas reverse when they bump each other; recheck their speed before
   committing.
@@ -163,8 +213,8 @@ second.
   12 pixels reloads straight into a death.
 - 2-3 is a chain of bridges between brick pillars, with gaps up to about
   100 pixels. Mario can't jump once `0x001D` is `02` (walked off), so take
-  off from the very end of the bridge, and save a state (990-999) at each
-  landing so a miss costs seconds, not the level.
+  off from the very end of the bridge, and take a `STATE checkpoint` (or save
+  to 990-999) at each landing so a miss costs seconds, not the level.
 
 ## Warping to a level
 
