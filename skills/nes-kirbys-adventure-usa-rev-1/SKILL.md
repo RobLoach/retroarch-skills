@@ -3,7 +3,7 @@ name: nes-kirbys-adventure-usa-rev-1
 description: Plays Kirby's Adventure (USA) (Rev 1) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Kirby's Adventure (USA) (Rev 1) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_INPUT mcp__retroarch__SCREENSHOT
 metadata:
   game: "Kirby's Adventure (USA) (Rev 1)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -48,26 +48,35 @@ places system RAM at `0x0000`-`0x07FF` and cartridge RAM at
 `0x6000`-`0x7FFF`.
 
 - **Nothing loaded:** `LIST_CORES <content path>` lists the installed cores
-  that can run the ROM. `LOAD_CONTENT` with `fceumm_libretro`.
+  that can run the ROM. `LOAD_CONTENT` with `fceumm_libretro` and `paused`
+  on, so nothing runs before the first step. RAM reads `FF` until a frame has
+  run.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
   `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`. The core splits RAM into 0x400-byte
   regions, and a read stops at the end of a region, so never read across a
   multiple of `0x400`. If the map is missing or short, tell the user.
 
-The game keeps running after `LOAD_CONTENT`, and after a few seconds an
-attract demo shows Kirby playing. Don't take that for gameplay.
+Left running, an attract demo shows Kirby playing after a few seconds. Don't
+take that for gameplay.
 
-1. `PRESS start 4`, `RUN_FRAMES 90`. Repeat until the title screen gives way
-   to the file menu (`KIRBY 1/2/3`, `Delete Saved Game`). A Start pressed
-   while the title is still appearing is dropped.
+1. `STEPS run 120; press 1 start 4; run 90; press 1 start 4; run 90`. Repeat
+   `press 1 start 4; run 90` until the title screen gives way to the file
+   menu (`KIRBY 1/2/3`, `Delete Saved Game`). A Start pressed while the title
+   is still appearing is dropped: after a paused load, the first one was.
 2. The cursor starts on `KIRBY 1`. Ask the user which file to use; `PRESS a 4`
    opens the highlighted file. Never choose `Delete Saved Game`.
-3. A "LEVEL 1 VEGETABLE VALLEY" card appears and waits for input:
-   `RUN_FRAMES 120`, `PRESS start 4`, `RUN_FRAMES 180`. This is a new file;
-   one with progress may start elsewhere.
-4. Kirby stands in the level hub just right of the stage 1 door.
-   `PRESS left 12`, `RUN_FRAMES 10`, `PRESS up 4`, `RUN_FRAMES 180`.
-5. In the stage, Kirby's X (`0x0095`, `0x0083`) is `00`, `28`.
+3. A "LEVEL 1 VEGETABLE VALLEY" card appears and waits for input; one call
+   goes through it into the hub: `STEPS press 1 a 4; run 120; press 1 start 4;
+   run 180` (with the file already highlighted). This is a new file; one with
+   progress may start elsewhere.
+4. Kirby stands in the level hub at X 120, just right of the stage 1 door.
+   Input is ignored for a moment: a 12-frame `left` straight away did nothing.
+   `up` enters the door from X 98, and only starts a flight at X 78. Kirby
+   slides on after walking, so step with taps that stop: an 8-frame tap moves
+   him about 10 px. Tap with `press 1 left 8; run 30` until X is about 98,
+   then `STEPS press 1 up 4; run 180`.
+5. In the stage, Kirby's X (`0x0095`, `0x0083`) is `00`, `28`, and Y is
+   `89`.
 
 ## Controls
 
@@ -117,29 +126,39 @@ taller than one screen are untested.
 
 ## Playing
 
-Loop: read Kirby (`0x0083`, `0x0095`, `0x00B9`) and health, decide, `PRESS`,
-read again. Times are in frames at 60 per second.
+`WATCH` Kirby once, so every step answers with him and needs no read after
+it: `x 95:83 y b9 act 62c7 hp 597 lives 599 pow 5e3 clear 521`. `95:83` reads
+page and X as one value, which conditions take too: `until 95:83 >= 500`.
+Watched values are decimal, while the tables here are hex. Then play each
+stretch as one `STEPS` call, with `stop 597 == 255` to end it on a death, and
+`STATE checkpoint` (or a `checkpoint` step) before a risky room. Times are in
+frames at 60 per second.
 
 - Stages are lined with steps. When holding `right` stops changing X, Kirby
   is against one: `PRESS right+a 16` clears a low step. For a tall wall,
   `PRESS up+right 90`, then `PRESS b 3` once over it.
-- **Fly high to cross a room:** `PRESS up 60`, then `PRESS up+right 600`
-  (the most `PRESS` allows) until X stops growing. Kirby crosses near the top
-  of the screen at about 0.7 px per frame, above most enemies. `PRESS b 3`
-  exhales to land.
+- **Fly high to cross a room:** `STEPS press 1 up 60`, then hold
+  `SET_INPUT 1 up+right 1` and `STEPS run 540` until X stops growing (one
+  request runs 540 frames at most; `PRESS` refuses 600). Kirby crosses near
+  the top of the screen at about 0.7 px per frame, above most enemies. In
+  stage 1's first room X stopped at 1007, within about 2,000 frames.
+  `RELEASE_INPUT`, then `STEPS press 1 b 3; run 120` exhales and lands.
 - Touching an enemy cost one bar each time in stage 1, and the enemy
   touched was destroyed. Inhaling one (`b` held, facing it) costs nothing,
   and the puff of air Kirby exhales destroys an enemy it hits.
 - **Copy an ability:** hold `b` facing an enemy within about 50 px until
   `0x05E2` changes, then `PRESS down 3`. `0x05E3` shows the new power; a
   Sparky gave Spark (`01`).
-- At the end of a room, stand in the doorway and `PRESS up 4`, then
-  `RUN_FRAMES 150`. X returns to `00`, `28` in the next room.
+- At the end of a room, stand in the doorway and `STEPS press 1 up 4; run
+  150`. X returns to `00`, `28` in the next room. In stage 1's first room,
+  two 8-frame `left` taps from X 1007 put Kirby in the door, at X 987.
 - A stage's last door is marked with a star and leads to a GOAL bonus game:
-  `PRESS a 4`, `RUN_FRAMES 600`. Kirby returns to the hub and the stage's bit
+  `PRESS a 4`, then `RUN_FRAMES 540` and `RUN_FRAMES 60`. Kirby returns to the hub and the stage's bit
   in `0x0521` is set.
-- In the level 1 hub, stage 1's door is at X 76 and stage 2's at X 245. Kirby
-  must be within a few pixels of a door: `up` at X 257 did nothing.
+- In the level 1 hub, `up` enters stage 1's door from X 98 (not from 78).
+  Stage 2's door was noted at X 245, not rechecked since stage 1's was found
+  22 px off; `up` at X 257 did nothing there. Kirby must be within a few
+  pixels of a door.
 
 ## Pitfalls
 

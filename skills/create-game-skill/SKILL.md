@@ -3,7 +3,7 @@ name: create-game-skill
 description: Creates a new game skill by working out a game's controls and memory addresses through experiment in RetroArch's MCP server. Use only when the user explicitly asks to create or learn a skill for a game.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_INPUT
 ---
 
 # Create a game skill
@@ -36,8 +36,10 @@ Treat these as guesses until tested in the game.
 
 ## Find state by experiment
 
-Save to an AI Agent slot, read a small range, change one thing, read again,
-compare. Reload to repeat.
+`STATE checkpoint`, read a small range, change one thing, read again,
+compare. `STATE rollback` to repeat; neither touches a save slot. `WATCH` the
+bytes you suspect, so every `RUN_FRAMES`, `PRESS` and `STEPS` answers with
+them.
 
 - **Position:** hold a direction for a known number of frames. X grows by about
   speed times frames, and a page byte nearby usually counts each 256.
@@ -72,6 +74,9 @@ Rules:
 ## Learn controls and timing
 
 - Press each RetroPad button with `PRESS` and watch what changes.
+- Record the common moves as `STEPS` lists, such as approach, jump and land
+  in one call, and how much momentum carries after a walk: a skill that
+  plays in lists takes a fraction of the calls.
 - Measure in frames, and note the frame rate (60 NTSC, 50 PAL): a short versus
   full jump, walk and run speed in pixels per frame, how far momentum carries
   after release, and how long input is ignored after boot or a transition.
