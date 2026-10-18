@@ -3,7 +3,7 @@ name: system-game-title-region
 description: Plays <Game Title> on the <System> through RetroArch's MCP server. Use when GET_STATUS reports <Game Title> or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_INPUT
 metadata:
   game: "Game Title (Region)"
   system: "Manufacturer - System Name"
@@ -44,7 +44,7 @@ Any core that publishes a memory map with <the RAM this skill reads> works.
 
 - **Nothing loaded:** `LIST_CORES <content path>` lists the installed cores
   that can run the content. `LOAD_CONTENT` with the first of them that's in
-  the list above.
+  the list above, and `paused` on.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering <the RAM
   this skill reads>. A read stops at the end of a region, so keep each read
   inside one. If the map is missing or short, tell the user and suggest one
@@ -75,8 +75,9 @@ paragraph.>
 
 ## Playing
 
-<The loop: read state, decide, act, check. Give timings in frames at the
-game's frame rate.>
+<What to `WATCH` once, so every step answers with it, and the `STEPS` lists
+that play the common stretches, with a `stop` for a death. Give timings in
+frames at the game's frame rate.>
 
 ## Pitfalls
 

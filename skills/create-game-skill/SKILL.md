@@ -3,7 +3,7 @@ name: create-game-skill
 description: Creates a new game skill by working out a game's controls and memory addresses through experiment in RetroArch's MCP server. Use only when the user explicitly asks to create or learn a skill for a game.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_INPUT
 ---
 
 # Create a game skill
@@ -14,7 +14,9 @@ verified as a new game skill.
 ## Before starting
 
 1. Call `GET_STATUS`. If a skill already covers the game, tell the user and
-   offer to improve it instead.
+   offer to improve it instead. If nothing is loaded, `LOAD_CONTENT` with
+   `paused` on, so nothing runs before the first step; RAM can read `FF`
+   until a frame has run.
 2. Save and load only the AI Agent save slots, 990-999, and never touch any
    other slot. Keep a title-screen save in one of them, so you can return
    without a reset. Ask before `RESET`, `CLOSE_CONTENT`, or `WRITE_CORE_MEMORY`.
@@ -36,8 +38,10 @@ Treat these as guesses until tested in the game.
 
 ## Find state by experiment
 
-Save to an AI Agent slot, read a small range, change one thing, read again,
-compare. Reload to repeat.
+`STATE checkpoint`, read a small range, change one thing, read again,
+compare. `STATE rollback` to repeat; neither touches a save slot. `WATCH` the
+bytes you suspect, so every `RUN_FRAMES`, `PRESS` and `STEPS` answers with
+them.
 
 - **Position:** hold a direction for a known number of frames. X grows by about
   speed times frames, and a page byte nearby usually counts each 256.
@@ -72,6 +76,9 @@ Rules:
 ## Learn controls and timing
 
 - Press each RetroPad button with `PRESS` and watch what changes.
+- Record the common moves as `STEPS` lists, such as approach, jump and land
+  in one call, and how much momentum carries after a walk: a skill that
+  plays in lists takes a fraction of the calls.
 - Measure in frames, and note the frame rate (60 NTSC, 50 PAL): a short versus
   full jump, walk and run speed in pixels per frame, how far momentum carries
   after release, and how long input is ignored after boot or a transition.
@@ -100,5 +107,8 @@ first.
   `###` heading with its `metadata.system` name, in alphabetical order. Link
   the No-Intro name to the new `SKILL.md`.
 - In the repository, run `python3 scripts/validate.py`.
+- Before calling it done, play a stretch following only the written skill,
+  as an assistant without your notes would, and fix whatever it had you
+  guess.
 - Tell the user how many screenshots you took, and which AI Agent save
   slots hold your saves.

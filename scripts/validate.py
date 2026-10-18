@@ -54,12 +54,15 @@ SYSTEM_CODES = {
 }
 
 # RetroArch MCP tools marked destructive, plus loading content over a
-# running game. Skills must not pre-approve them.
+# running game. Skills must not pre-approve them. STATE, REPLAY and CORE
+# took over the slot, replay and core commands below them, which stay
+# listed for servers that still offer them as tools.
 DESTRUCTIVE = {
-    "WRITE_CORE_MEMORY", "LOAD_STATE_SLOT", "SAVE_STATE_SLOT",
-    "PLAY_REPLAY_SLOT", "SEEK_REPLAY", "RECORD_REPLAY", "SAVE_FILES",
-    "LOAD_FILES", "LOAD_CORE", "START_CORE", "LOAD_CONTENT", "CLOSE_CONTENT",
-    "UNLOAD_CORE", "QUIT", "RESET",
+    "WRITE_CORE_MEMORY", "STATE", "REPLAY", "CORE", "LOAD_CONTENT",
+    "CLOSE_CONTENT", "QUIT", "RESET",
+    "LOAD_STATE_SLOT", "SAVE_STATE_SLOT", "PLAY_REPLAY_SLOT", "SEEK_REPLAY",
+    "RECORD_REPLAY", "SAVE_FILES", "LOAD_FILES", "LOAD_CORE", "START_CORE",
+    "UNLOAD_CORE",
 }
 
 
