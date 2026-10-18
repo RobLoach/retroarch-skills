@@ -14,7 +14,9 @@ verified as a new game skill.
 ## Before starting
 
 1. Call `GET_STATUS`. If a skill already covers the game, tell the user and
-   offer to improve it instead.
+   offer to improve it instead. If nothing is loaded, `LOAD_CONTENT` with
+   `paused` on, so nothing runs before the first step; RAM can read `FF`
+   until a frame has run.
 2. Save and load only the AI Agent save slots, 990-999, and never touch any
    other slot. Keep a title-screen save in one of them, so you can return
    without a reset. Ask before `RESET`, `CLOSE_CONTENT`, or `WRITE_CORE_MEMORY`.
@@ -105,5 +107,8 @@ first.
   `###` heading with its `metadata.system` name, in alphabetical order. Link
   the No-Intro name to the new `SKILL.md`.
 - In the repository, run `python3 scripts/validate.py`.
+- Before calling it done, play a stretch following only the written skill,
+  as an assistant without your notes would, and fix whatever it had you
+  guess.
 - Tell the user how many screenshots you took, and which AI Agent save
   slots hold your saves.

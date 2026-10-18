@@ -79,8 +79,8 @@ metadata:
 - `allowed-tools`: the RetroArch tools the assistant may call without a
   prompt while the skill is active, separated by spaces. Copy the template's
   list: reads, input and frame stepping. Never add a tool that can lose
-  progress, such as `RESET`, `WRITE_CORE_MEMORY`, `LOAD_CONTENT`, or the save
-  state tools; the validator rejects them.
+  progress, such as `RESET`, `WRITE_CORE_MEMORY`, `LOAD_CONTENT` or `STATE`;
+  the validator rejects them.
 - `metadata.game`: the exact No-Intro name.
 - `metadata.system`: the libretro-database system name, such as
   `Nintendo - Super Nintendo Entertainment System`.
@@ -106,8 +106,11 @@ Keep every value on one line. The validator does not parse multi-line YAML.
   keeps in every mode, such as a warm-boot marker or code copied into RAM.
   This also catches renamed ROMs and cores without a memory map.
 - **Verify everything in the running game.** Test each memory address with
-  `READ_CORE_MEMORY`, and test each input sequence with `PRESS` or
-  `SET_INPUT`. Don't copy RAM maps without checking them.
+  `READ_CORE_MEMORY` or `WATCH`, and test each input sequence with `PRESS`,
+  `SET_INPUT` or `STEPS`. Don't copy RAM maps without checking them.
+- **Play in lists.** `WATCH` the bytes a step needs once, and give the common
+  moves as `STEPS` lists - approach, jump and land in one call, with a `stop`
+  for a death - rather than a read and a press per call.
 - **Use frames, not seconds.** Tools such as `PRESS` and `RUN_FRAMES` count
   frames. Give timings as frame counts, and state the frame rate, for example
   60 for NTSC or 50 for PAL.
@@ -117,6 +120,9 @@ Keep every value on one line. The validator does not parse multi-line YAML.
   each address with its size and meaning.
 - **Save states use the AI Agent save slots, 990-999, only.** Skills share
   them, so the player's own slots are never touched.
+- **Test it as a newcomer.** Have an assistant with no other notes play a
+  stretch from the skill alone. It finds the instructions that only made
+  sense to whoever wrote them.
 - **Mark destructive steps.** `RESET`, `CLOSE_CONTENT`, and
   `WRITE_CORE_MEMORY` can lose the player's progress. Tell the assistant to ask
   first.

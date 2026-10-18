@@ -20,7 +20,12 @@ skill.
 
 ## Requirements
 
-- A RetroArch build with the MCP server (`HAVE_MCP`)
+- A RetroArch build with the MCP server (`HAVE_MCP`). The skills play with
+  `STEPS`, `STATE checkpoint` and queued `STEPS` with `checkpoint` steps;
+  the last three come with
+  [libretro/RetroArch#19861](https://github.com/libretro/RetroArch/pull/19861).
+  On an older build, play one `STEPS` call at a time and save to the AI
+  Agent slots, 990-999, instead of checkpointing.
 - An MCP client that supports skills, such as
   [Claude Code](https://claude.com/claude-code)
 - Your own legally obtained game content
