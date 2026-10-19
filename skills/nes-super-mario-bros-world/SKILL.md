@@ -3,7 +3,7 @@ name: nes-super-mario-bros-world
 description: Plays Super Mario Bros. (World) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Super Mario Bros. (World) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT mcp__retroarch__GET_INPUT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT
 metadata:
   game: "Super Mario Bros. (World)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -140,7 +140,7 @@ Loop: read Mario and enemy positions, decide, `PRESS`, read again to check.
 Gap = enemy absolute X - Mario absolute X. Times are in frames at 60 per
 second.
 
-Cheaper: with the `WATCH` above, `SET_INPUT 1 right+b 1` once to keep running
+Cheaper: with the `WATCH` above, `INPUT set 1 right+b 1` once to keep running
 right, and play each obstacle as one `STEPS` call. Its reply carries the
 watched values, so no read is needed after it:
 
@@ -154,7 +154,7 @@ until 6d:86 >= 412; press 1 a 20; until 1d == 0; stop e == 11; stop b5 > 1
   a cheap way to learn where the next enemies are before committing.
 - Several obstacles can go in one list, and a replay after a rollback is
   deterministic.
-- Hold or release `right+b` with `SET_INPUT` and `RELEASE_INPUT`, not inside
+- Hold or release `right+b` with `INPUT set` and `INPUT release`, not inside
   `STEPS`. It stays held through `STATE rollback`.
 - A `checkpoint` step at the start of a list keeps the state `STATE rollback`
   returns to, with no call of its own. `STATE rollback` and one replay then
