@@ -107,7 +107,7 @@ Keep every value on one line. The validator does not parse multi-line YAML.
   This also catches renamed ROMs and cores without a memory map.
 - **Verify everything in the running game.** Test each memory address with
   `READ_CORE_MEMORY` or `WATCH`, and test each input sequence with `PRESS`,
-  `SET_INPUT` or `STEPS`. Don't copy RAM maps without checking them.
+  `INPUT` or `STEPS`. Don't copy RAM maps without checking them.
 - **Play in lists.** `WATCH` the bytes a step needs once, and give the common
   moves as `STEPS` lists - approach, jump and land in one call, with a `stop`
   for a death - rather than a read and a press per call.

@@ -3,7 +3,7 @@ name: nes-kirbys-adventure-usa-rev-1
 description: Plays Kirby's Adventure (USA) (Rev 1) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Kirby's Adventure (USA) (Rev 1) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__SET_INPUT mcp__retroarch__RELEASE_INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_INPUT mcp__retroarch__SCREENSHOT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT
 metadata:
   game: "Kirby's Adventure (USA) (Rev 1)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -138,11 +138,11 @@ frames at 60 per second.
   is against one: `PRESS right+a 16` clears a low step. For a tall wall,
   `PRESS up+right 90`, then `PRESS b 3` once over it.
 - **Fly high to cross a room:** `STEPS press 1 up 60`, then hold
-  `SET_INPUT 1 up+right 1` and `STEPS run 540` until X stops growing (one
+  `INPUT set 1 up+right 1` and `STEPS run 540` until X stops growing (one
   request runs 540 frames at most; `PRESS` refuses 600). Kirby crosses near
   the top of the screen at about 0.7 px per frame, above most enemies. In
   stage 1's first room X stopped at 1007, within about 2,000 frames.
-  `RELEASE_INPUT`, then `STEPS press 1 b 3; run 120` exhales and lands.
+  `INPUT release`, then `STEPS press 1 b 3; run 120` exhales and lands.
 - Touching an enemy cost one bar each time in stage 1, and the enemy
   touched was destroyed. Inhaling one (`b` held, facing it) costs nothing,
   and the puff of air Kirby exhales destroys an enemy it hits.
