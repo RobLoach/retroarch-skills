@@ -3,7 +3,7 @@ name: nes-super-mario-bros-world
 description: Plays Super Mario Bros. (World) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Super Mario Bros. (World) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME mcp__retroarch__SCREENSHOT
 metadata:
   game: "Super Mario Bros. (World)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -50,11 +50,10 @@ Any NES core works if it publishes a memory map with system RAM at `0x0000`.
   that can run the ROM. `LOAD_CONTENT` with the first of them that's in the
   list above.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0x0000`-`0x07FF`. A read stops at the end of a region, so keep each read
-  inside one; fceumm splits RAM at `0x0400`. If the map is missing or short,
-  tell the user and suggest one of the cores above.
+  `0x0000`-`0x07FF`. If the map is missing or short, tell the user and
+  suggest one of the cores above.
 
-To start: `RUN_FRAMES 120`, `PRESS start 4`, `RUN_FRAMES 200`, then read
+To start: `RUN_FRAMES 120`, `PRESS 1 start 4`, `RUN_FRAMES 200`, then read
 `0x0770`. The first Start after loading is often dropped; if it is still `00`,
 press Start again. `0x0770` turns `01` during the "WORLD 1-1" card, before
 Mario can move. Play has begun when `0x0772` is `03` and `0x000E` is `08`,
@@ -89,7 +88,8 @@ needs no reads after it. One call covers Mario and four enemy slots:
 `st e air 1d x 6d:86 y ce vs b5 spd 57 e0 f e0x 6e:87 e1 10 e1x 6f:88 e2 11
 e2x 70:89 e3 12 e3x 71:8a`. Watched values come back in decimal, while this
 table is in hex: `57` running shows `40` (`0x28`), and `ce` on the ground
-shows `176` (`0xB0`). A slot that isn't active keeps a stale X, so trust an
+shows `176` (`0xB0`). Conditions take either: `stop e == 0xB` is
+`stop e == 11`. A slot that isn't active keeps a stale X, so trust an
 enemy's X only while its `0x000F` flag is `01`.
 
 | Address | Bytes | Meaning |
@@ -168,8 +168,9 @@ queued; the game pauses only when the queue runs dry. Send the next stretch
 as soon as a call answers, two stretches ahead: a stretch of 4-5 seconds is
 shorter than writing the next call. A reply with `idle` says the queue ran dry
 and for how many milliseconds; send two at once to get ahead again. A stop
-ends the whole queue, lists behind it too, and is answered to the next queued
-call instead, whose steps are dropped: roll back and queue again. A rollback,
+ends the whole queue, lists behind it too. The next reply, from any call,
+says how it ended (`previous`: which stop, on which step), and a queued call
+then drops its own steps (`discarded`): roll back and queue again. A rollback,
 a state load or `RESET` also ends the queue. Empty `steps` with `queue: on`
 only asks where it got to.
 
@@ -192,26 +193,26 @@ the next. Played this way, 1-1 took 18 calls, against 48 one stretch at a
 time.
 
 - **Stomp:** stand still, with `0x0057` at `00`. When an approaching enemy's
-  gap is 18-22, `PRESS a 12`, `RUN_FRAMES 24`, then check its state is `04`.
+  gap is 18-22, `PRESS 1 a 12`, `RUN_FRAMES 24`, then check its state is `04`.
   The stomp lands when Mario's hitbox bottom (y2) reaches the enemy's top (y1)
   while they overlap in X and `0x009F` is positive (falling). For two Goombas
   close together, a running jump over both is safer than stomping.
-- **Jump over:** while walking, at gap ~50, `PRESS right+a 20-32`. While
+- **Jump over:** while walking, at gap ~50, `PRESS 1 right+a 20-32`. While
   running (`0x0057` at `28`), a hop of `a 10-14` at gap 45-60 clears one
   Goomba or a pair. The four Goombas around X 1950-2030 in 1-1 need a full
   jump (`a 24` from X 1912): short hops land among them.
-- **Pipe, wall or stairs:** walk into it, then `PRESS right+a 32-35`. That
+- **Pipe, wall or stairs:** walk into it, then `PRESS 1 right+a 32-35`. That
   clears 4 blocks; repeat to climb.
 - **Pit:** 2 wide, a walking full jump from the edge. 3 wide,
-  `PRESS right+b 20` to the edge, then `PRESS right+b+a 28`.
+  `PRESS 1 right+b 20` to the edge, then `PRESS 1 right+b+a 28`.
 - **Power-up:** jump into a `C1` block from below. The mushroom slides along,
   bounces off pipes, and grows Mario on touch, so letting it come to Mario
   usually works. Big Mario survives one hit by shrinking.
 - **Down a pipe:** stand on a pipe topped with `10`/`11`, no more than 12
-  pixels right of its left edge, and `PRESS down 8`. `0x000E` turns `03`. To
+  pixels right of its left edge, and `PRESS 1 down 8`. `0x000E` turns `03`. To
   leave by a sideways pipe, walk into it.
-- **Flagpole:** from the top step of the last staircase, `PRESS right+b 8`,
-  `PRESS right+b+a 30`, `PRESS right+b 40`. Done when `0x001D` is `03` or
+- **Flagpole:** from the top step of the last staircase, `PRESS 1 right+b 8`,
+  `PRESS 1 right+b+a 30`, `PRESS 1 right+b 40`. Done when `0x001D` is `03` or
   `0x000E` is `04` or `05`; a grab near the bottom of the pole skips `03`.
   In 1-1 the last staircase can be climbed and the pole reached in one call
   from its third step (Y `0x80`), holding `right+b`:

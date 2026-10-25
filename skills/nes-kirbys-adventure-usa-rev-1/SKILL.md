@@ -3,7 +3,7 @@ name: nes-kirbys-adventure-usa-rev-1
 description: Plays Kirby's Adventure (USA) (Rev 1) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Kirby's Adventure (USA) (Rev 1) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__SCREENSHOT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME mcp__retroarch__SCREENSHOT
 metadata:
   game: "Kirby's Adventure (USA) (Rev 1)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -52,9 +52,8 @@ places system RAM at `0x0000`-`0x07FF` and cartridge RAM at
   on, so nothing runs before the first step. RAM reads `FF` until a frame has
   run.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`. The core splits RAM into 0x400-byte
-  regions, and a read stops at the end of a region, so never read across a
-  multiple of `0x400`. If the map is missing or short, tell the user.
+  `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`. If the map is missing or short,
+  tell the user.
 
 Left running, an attract demo shows Kirby playing after a few seconds. Don't
 take that for gameplay.
@@ -63,7 +62,7 @@ take that for gameplay.
    `press 1 start 4; run 90` until the title screen gives way to the file
    menu (`KIRBY 1/2/3`, `Delete Saved Game`). A Start pressed while the title
    is still appearing is dropped: after a paused load, the first one was.
-2. The cursor starts on `KIRBY 1`. Ask the user which file to use; `PRESS a 4`
+2. The cursor starts on `KIRBY 1`. Ask the user which file to use; `PRESS 1 a 4`
    opens the highlighted file. Never choose `Delete Saved Game`.
 3. A "LEVEL 1 VEGETABLE VALLEY" card appears and waits for input; one call
    goes through it into the hub: `STEPS press 1 a 4; run 120; press 1 start 4;
@@ -85,8 +84,8 @@ Measured at 60 frames per second.
 | Action | RetroPad | Notes |
 | ------ | -------- | ----- |
 | Walk   | `left`, `right` | About 1.1 px per frame. |
-| Run    | double-tap a direction and hold the second tap | `PRESS left 2`, `RUN_FRAMES 2`, `PRESS left 36` covers 53 px against 44 for a plain 40-frame walk. |
-| Jump   | `a` | `PRESS a 3` rises 8 px and lands in about 20 frames. `PRESS a 16` rises about 40 px and lands about 55 frames after the press. |
+| Run    | double-tap a direction and hold the second tap | `PRESS 1 left 2`, `RUN_FRAMES 2`, `PRESS 1 left 36` covers 53 px against 44 for a plain 40-frame walk. |
+| Jump   | `a` | `PRESS 1 a 3` rises 8 px and lands in about 20 frames. `PRESS 1 a 16` rises about 40 px and lands about 55 frames after the press. |
 | Fly    | `up` (in the open) | Kirby puffs up and rises about 1.2 px per frame while `up` is held, keeps drifting up briefly after release, and floats. |
 | Stop flying | `b` | Exhales; Kirby falls, about 80 px in 60 frames. |
 | Inhale | `b` (held) | Holding `b` for 60 frames sucked in a Waddle Dee that started 57 px ahead, walking toward Kirby. |
@@ -135,8 +134,8 @@ stretch as one `STEPS` call, with `stop 597 == 255` to end it on a death, and
 frames at 60 per second.
 
 - Stages are lined with steps. When holding `right` stops changing X, Kirby
-  is against one: `PRESS right+a 16` clears a low step. For a tall wall,
-  `PRESS up+right 90`, then `PRESS b 3` once over it.
+  is against one: `PRESS 1 right+a 16` clears a low step. For a tall wall,
+  `PRESS 1 up+right 90`, then `PRESS 1 b 3` once over it.
 - **Fly high to cross a room:** `STEPS press 1 up 60`, then hold
   `INPUT set 1 up+right 1` and `STEPS run 540` until X stops growing (one
   request runs 540 frames at most; `PRESS` refuses 600). Kirby crosses near
@@ -147,13 +146,13 @@ frames at 60 per second.
   touched was destroyed. Inhaling one (`b` held, facing it) costs nothing,
   and the puff of air Kirby exhales destroys an enemy it hits.
 - **Copy an ability:** hold `b` facing an enemy within about 50 px until
-  `0x05E2` changes, then `PRESS down 3`. `0x05E3` shows the new power; a
+  `0x05E2` changes, then `PRESS 1 down 3`. `0x05E3` shows the new power; a
   Sparky gave Spark (`01`).
 - At the end of a room, stand in the doorway and `STEPS press 1 up 4; run
   150`. X returns to `00`, `28` in the next room. In stage 1's first room,
   two 8-frame `left` taps from X 1007 put Kirby in the door, at X 987.
 - A stage's last door is marked with a star and leads to a GOAL bonus game:
-  `PRESS a 4`, then `RUN_FRAMES 540` and `RUN_FRAMES 60`. Kirby returns to the hub and the stage's bit
+  `PRESS 1 a 4`, then `RUN_FRAMES 540` and `RUN_FRAMES 60`. Kirby returns to the hub and the stage's bit
   in `0x0521` is set.
 - In the level 1 hub, `up` enters stage 1's door from X 98 (not from 78).
   Stage 2's door was noted at X 245, not rechecked since stage 1's was found

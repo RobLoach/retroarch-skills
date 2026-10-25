@@ -3,7 +3,7 @@ name: create-game-skill
 description: Creates a new game skill by working out a game's controls and memory addresses through experiment in RetroArch's MCP server. Use only when the user explicitly asks to create or learn a skill for a game.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME
 ---
 
 # Create a game skill
@@ -54,8 +54,9 @@ them.
 - **Terrain:** look for a block of RAM whose bytes repeat where the screen shows
   ground, and whose gaps line up with pits.
 - **Signature** for Confirm the game: bytes that are the same in every mode.
-  Read all of RAM, in reads that stay inside one memory map region, soon after
-  loading, on the title screen, in the demo, and in play from several saves.
+  Read all of RAM - a read runs on across regions, and says `truncated` where
+  memory ends - soon after loading, on the title screen, in the demo, and in
+  play from several saves.
   Keep the bytes that never change and aren't `00` or `FF`. Prefer a warm-boot
   marker (Super Mario Bros. keeps `A5` at `0x07FF`) or code the game copies
   into RAM (Kirby's Adventure keeps a routine at `0x0029`). Skip sprite tables
@@ -69,7 +70,8 @@ Rules:
 - Confirm each address with two different changes, including one where a
   coincidence could fool you, such as the same X on the title screen.
 - Read narrow ranges. Counting bytes in a large dump goes wrong.
-- Use screenshots only to check what the memory says. Each one saves a file.
+- Look at the screen only to check what the memory says. `GET_FRAME`, where
+  RetroArch has it, writes nothing; each `SCREENSHOT` saves a file.
 - Save only when nothing is about to hit the player. A save taken mid-collision
   reloads straight into a death.
 
