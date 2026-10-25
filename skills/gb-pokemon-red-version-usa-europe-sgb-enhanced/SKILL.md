@@ -122,19 +122,39 @@ Watched values come back in decimal, while this table is in hex.
 | `0xD164` | 6 | Party species, `FF` after the last |
 | `0xD16B` | 44 each | Party Pokémon, 6 slots `0x2C` apart. Offsets: `+0x00` species, `+0x01` HP (2, big-endian), `+0x08` moves (4), `+0x0E` experience (3), `+0x1D` PP (4), `+0x21` level, `+0x22` max HP (2) |
 | `0xD2B5` | 11 each | Party nicknames |
+| `0xD16F` | 1 | † Party slot 1 status (`+0x04` in each slot): bits 0-2 sleep turns, bit 3 poison, bit 4 burn, bit 5 freeze, bit 6 paralysis. `00` is healthy |
+| `0xD170` | 2 | † Party slot 1 types (`+0x05`, `+0x06`) |
+| `0xD18F` | 8 | † Party slot 1 stats (`+0x24`), 2 bytes each, big-endian: Attack, Defense, Speed, Special |
+| `0xD356` | 1 | † Badges, one bit each from bit 0 (Boulder) to bit 7 (Earth) |
+| `0xD2F7`, `0xD30A` | 19, 19 | † Pokédex owned and seen, one bit per Pokédex number from bit 0 of the first byte |
+| `0xD0DB` | 1 | † Repel steps left |
+| `0xD53A` | 1 | † Number of items in the PC |
+| `0xDA80` | 1 | † Number of Pokémon in the current box |
+| `0xC204` + `0x10` × n | 2 | † Sprite n's Y, X on the grid plus 4 (`0xC204` - 4 = player Y). Sprite 0 is the player; use it to find NPCs on the map |
 | `0xD057` | 1 | Battle: `00` none, `01` wild, `02` trainer |
 | `0xD014` | 1 | Your Pokémon in battle: species |
 | `0xD015` | 2 | Its HP, big-endian. Stale after the battle, even after healing; the party slot's HP updates live in battle too, so prefer it |
 | `0xD01C` | 4 | Its moves |
 | `0xCFE5` | 1 | Enemy species |
 | `0xCFE6` | 2 | Enemy HP, big-endian |
+| `0xCFF4` | 2 | † Enemy max HP, big-endian |
+| `0xCFE9` | 1 | † Enemy status, same bits as the party's |
+| `0xCFEA` | 2 | † Enemy types |
+| `0xCFED` | 4 | † Enemy moves |
 | `0xCFF3` | 1 | Enemy level |
+| `0xD89C` | 1 | † Enemy trainer's party size; species follow at `0xD89D`, `FF` after the last |
+| `0xD8A4` | 44 each | † Enemy trainer's party, laid out like yours (same offsets) |
+| `0xD887` | 1 | † Wild encounter rate on this map, `00` for none |
+| `0xD888` | 2 each | † Wild encounter table: level and species, 10 slots, commonest first |
 | `0xC4C0` | 1 | `7C` while the battle menu (FIGHT, PKMN, ITEM, RUN) is up |
 | `0xC4C1`, `0xC4C7`, `0xC4E9`, `0xC4EF` | 1 each | `ED` where the battle menu cursor is: FIGHT, PKMN, ITEM, RUN |
 
 Species and item numbers are the game's internal IDs, not Pokédex numbers:
 `99` Bulbasaur, `24` Pidgey, `A5` Rattata; `14` Potion. Moves: `21` Tackle,
 `2D` Growl. For any other ID, look at the battle with `GET_FRAME`.
+
+Rows marked † come from a community memory map and haven't been tested
+with this skill yet; check them against `GET_FRAME` before relying on them.
 
 Two-byte values watch as `high:low`: `ehp cfe6:cfe7`, `hp d16c:d16d`.
 
