@@ -15,6 +15,14 @@ metadata:
 
 <One or two sentences: what the game is and what the player is trying to do.>
 
+## Quick start
+
+1. `GET_STATUS`, then read `<address>`: `<bytes>` is this game.
+2. <The one `STEPS` call that goes from a paused load to play.>
+3. `WATCH <the line under Memory>`, once.
+4. <How each stretch is played: the `STEPS` shape and its death `stop`.>
+5. A `checkpoint` step before a hard stretch; `STATE rollback` after a death.
+
 ## Confirm the game
 
 Call `GET_STATUS`. Its reply should name `<system_id>` and

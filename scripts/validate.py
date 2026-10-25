@@ -65,6 +65,30 @@ DESTRUCTIVE = {
     "UNLOAD_CORE",
 }
 
+# Every tool RetroArch's MCP server lists. A skill that pre-approves a name
+# not here is pre-approving nothing, and usually means a tool was renamed.
+KNOWN_TOOLS = {
+    "CLOSE_CONTENT", "CORE", "CORE_OPTION", "DISK", "GET_FRAME", "GET_LOG",
+    "GET_MEMORY_MAP", "GET_PLAYLIST", "GET_STATUS", "INPUT", "LIST_CORES",
+    "LIST_PLAYLISTS", "LOAD_CONTENT", "MENU", "OPTION", "PRESS", "QUIT",
+    "READ_CORE_MEMORY", "REINIT", "REPLAY", "RESET", "RUN_FRAMES",
+    "RUN_UNTIL", "SCREENSHOT", "SET_SHADER", "SHOW_MSG", "STATE", "STEPS",
+    "WATCH", "WRITE_CORE_MEMORY",
+}
+
+# Tools folded into others, and what a skill calls instead.
+RETIRED = {
+    "SET_INPUT": "INPUT set", "RELEASE_INPUT": "INPUT release",
+    "GET_INPUT": "INPUT show", "GET_OPTION": "OPTION show",
+    "SET_OPTION": "OPTION set", "GET_CORE_OPTION": "CORE_OPTION show",
+    "SET_CORE_OPTION": "CORE_OPTION set", "LOAD_CORE": "CORE load",
+    "START_CORE": "CORE start", "UNLOAD_CORE": "CORE unload",
+    "SAVE_STATE_SLOT": "STATE save", "LOAD_STATE_SLOT": "STATE load",
+}
+
+RETIRED_RE = re.compile(r"`(" + "|".join(RETIRED) + r")\b")
+LINK_RE = re.compile(r"\]\(([^)#:]+\.md)\)")
+
 
 def slugify(game):
     text = unicodedata.normalize("NFKD", game)
@@ -132,8 +156,22 @@ def check(skill, seen, listed):
     if len(compatibility) > 500:
         errors.append(f"compatibility is {len(compatibility)} characters, the limit is 500")
     for tool in data.get("allowed-tools", "").split():
-        if tool.rpartition("__")[2] in DESTRUCTIVE:
+        server, _, bare = tool.rpartition("__")
+        if bare in DESTRUCTIVE:
             errors.append(f"allowed-tools: {tool} can lose the user's progress; leave it to a prompt")
+        elif server != "mcp__retroarch" or bare not in KNOWN_TOOLS:
+            errors.append(f"allowed-tools: {tool} is not a RetroArch tool")
+
+    # every file of the skill: no retired tool, no link to a missing file
+    for path in sorted(skill.parent.rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        rel = path.relative_to(skill.parent)
+        where = "" if rel.name == "SKILL.md" and rel.parent == Path(".") else f"{rel}: "
+        for old in sorted(set(RETIRED_RE.findall(text))):
+            errors.append(f"{where}{old} is gone; call {RETIRED[old]}")
+        for link in LINK_RE.findall(text):
+            if not (path.parent / link).is_file():
+                errors.append(f"{where}links to {link}, which does not exist")
 
     metadata = data.get("metadata")
     if metadata is None:

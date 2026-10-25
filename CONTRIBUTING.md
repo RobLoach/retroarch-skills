@@ -126,8 +126,11 @@ Keep every value on one line. The validator does not parse multi-line YAML.
 - **Mark destructive steps.** `RESET`, `CLOSE_CONTENT`, and
   `WRITE_CORE_MEMORY` can lose the player's progress. Tell the assistant to ask
   first.
-- **Keep it short.** Keep `SKILL.md` under about 500 lines. Put long material,
-  such as full level routes, in separate files next to it and link to them.
+- **Start with a Quick start.** The first calls, in order: confirm the game,
+  reach play, `WATCH`, and the shape of a stretch of play.
+- **Keep it short.** Keep `SKILL.md` under about 500 lines. Put long material
+  used only sometimes, such as full level routes, in `references/` next to it
+  and link to it; the assistant reads it only when it needs it.
 - **Don't include ROMs or links to ROMs.**
 
 ## Validation
@@ -137,4 +140,8 @@ python3 scripts/validate.py
 ```
 
 The validator checks names, frontmatter, duplicate games, and that every game
-is in the README's Games list. CI runs it on every pull request.
+is in the README's Games list. It also checks that `allowed-tools` names only
+tools RetroArch has, that no file still calls a tool RetroArch folded into
+another (`SET_INPUT` is now `INPUT set`), and that every link to a `.md` file
+resolves. When RetroArch adds or renames a tool, update `KNOWN_TOOLS` and
+`RETIRED` in `scripts/validate.py`. CI runs it on every pull request.

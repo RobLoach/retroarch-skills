@@ -71,7 +71,9 @@ Rules:
   coincidence could fool you, such as the same X on the title screen.
 - Read narrow ranges. Counting bytes in a large dump goes wrong.
 - Look at the screen only to check what the memory says. `GET_FRAME`, where
-  RetroArch has it, writes nothing; each `SCREENSHOT` saves a file.
+  RetroArch has it, writes nothing; each `SCREENSHOT` saves a file. A frame
+  beside a suspected byte settles what it holds: Mario's X against where he
+  stands.
 - Save only when nothing is about to hit the player. A save taken mid-collision
   reloads straight into a death.
 
@@ -86,6 +88,14 @@ Rules:
   after release, and how long input is ignored after boot or a transition.
 - For each common hazard, find a pattern that works and record the numbers,
   such as the gap to an enemy at which a jump clears it.
+- End a move on what the game reports, not a guess at frames:
+  `PRESS 1 a 20 until 1d == 0` jumps and lands in one call, and `until`
+  steps do the same inside `STEPS`. Conditions take decimal or `0x` values.
+- Start each experiment with a `checkpoint` step and `STATE rollback` to
+  repeat it; neither touches a save slot.
+- Once a stretch plays reliably, queue it (`queue: on`): the game plays on
+  while the next list is written. The next reply says how a queued list
+  ended (`previous`), and a queued call after a stop drops its own steps.
 
 ## Write the skill
 
@@ -93,8 +103,8 @@ Follow the [template](assets/template.md), and in the repository also
 `CONTRIBUTING.md`: frontmatter with `name`, `description`, `license`,
 `compatibility` and `allowed-tools` (copy the last three from the template),
 and `metadata` (`game`, `system`, `cores`, optional `crc32`), then the
-sections Confirm the game, Setup, Controls, Memory, Playing, Pitfalls and Ask
-first.
+sections Quick start, Confirm the game, Setup, Controls, Memory, Playing,
+Pitfalls and Ask first.
 
 - Name the directory, and the `name` field, with the system's code, a `-`, and
   the slug of the game's No-Intro name, such as `nes-super-mario-bros-world`.
@@ -105,6 +115,9 @@ first.
   `~/.claude/skills/<name>/`.
 - Include only what you verified. Tell the user what you didn't test, rather
   than guessing in the skill.
+- Keep `SKILL.md` to what every session needs. Put long material used only
+  sometimes - a full level route, a warp table - in `references/` beside it
+  and link it; the assistant reads it only when it gets there.
 - In the repository, add the game to the Games list in `README.md`, under a
   `###` heading with its `metadata.system` name, in alphabetical order. Link
   the No-Intro name to the new `SKILL.md`.

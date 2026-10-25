@@ -9,7 +9,8 @@ for state such as lives or position, and how to play it well.
 
 For a game without a skill, ask the assistant to create one. The
 `create-game-skill` skill has it work these out by experiment and write a new
-skill.
+skill. `use-retroarch` covers RetroArch itself: finding and loading games,
+options, and its menu.
 
 ## Games
 
@@ -17,6 +18,13 @@ skill.
 
 - [Kirby's Adventure (USA) (Rev 1)](skills/nes-kirbys-adventure-usa-rev-1/SKILL.md)
 - [Super Mario Bros. (World)](skills/nes-super-mario-bros-world/SKILL.md)
+
+## General
+
+- [Use RetroArch](skills/use-retroarch/SKILL.md): load games from playlists,
+  change options and settings, and move through the menu.
+- [Create a game skill](skills/create-game-skill/SKILL.md): work out a new
+  game's controls and memory by experiment, and write its skill.
 
 ## Requirements
 
@@ -106,6 +114,8 @@ Load a game in RetroArch, then ask the assistant to play it:
 > Improve the Kirby skill, find the byte that says which stage we're currently in.
 >
 > Create a skill for the game that's loaded.
+>
+> Load Kirby's Adventure from my NES playlist, and turn on the frame rate.
 
 ## Layout
 
@@ -118,6 +128,11 @@ skills/
   nes-kirbys-adventure-usa-rev-1/
     SKILL.md
   nes-super-mario-bros-world/
+    SKILL.md
+    references/
+      route-1-1.md
+      warping.md
+  use-retroarch/
     SKILL.md
 ```
 

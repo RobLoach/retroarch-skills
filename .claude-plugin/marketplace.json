@@ -7,7 +7,7 @@
     {
       "name": "retroarch-skills",
       "source": "./",
-      "description": "Skills for playing games through RetroArch's MCP server, and for creating new game skills."
+      "description": "Skills for playing games through RetroArch's MCP server, for using RetroArch itself, and for creating new game skills."
     }
   ]
 }

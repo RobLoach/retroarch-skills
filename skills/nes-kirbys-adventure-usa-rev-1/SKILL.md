@@ -17,6 +17,15 @@ A side-scrolling platformer: Kirby walks, jumps and flies through stages
 reached from doors in each level's hub, inhaling enemies and copying their
 abilities. Stages scroll right; each ends at a door.
 
+## Quick start
+
+1. `GET_STATUS`, then read `0x0029`, 10 bytes (Confirm the game).
+2. Setup's steps reach the level 1 hub: the title, the file the user picks,
+   the level card, then the stage 1 door.
+3. `WATCH x 95:83 y b9 act 62c7 hp 597 lives 599 pow 5e3 clear 521`, once.
+4. Play each stretch as one `STEPS` call with `stop 597 == 255`, starting a
+   risky room with a `checkpoint` step; `STATE rollback` after a death.
+
 ## Confirm the game
 
 Call `GET_STATUS`. Its reply should name `nes` and
@@ -84,7 +93,7 @@ Measured at 60 frames per second.
 | Action | RetroPad | Notes |
 | ------ | -------- | ----- |
 | Walk   | `left`, `right` | About 1.1 px per frame. |
-| Run    | double-tap a direction and hold the second tap | `PRESS 1 left 2`, `RUN_FRAMES 2`, `PRESS 1 left 36` covers 53 px against 44 for a plain 40-frame walk. |
+| Run    | double-tap a direction and hold the second tap | `STEPS press 1 left 2; run 2; press 1 left 36` covers 53 px against 44 for a plain 40-frame walk. |
 | Jump   | `a` | `PRESS 1 a 3` rises 8 px and lands in about 20 frames. `PRESS 1 a 16` rises about 40 px and lands about 55 frames after the press. |
 | Fly    | `up` (in the open) | Kirby puffs up and rises about 1.2 px per frame while `up` is held, keeps drifting up briefly after release, and floats. |
 | Stop flying | `b` | Exhales; Kirby falls, about 80 px in 60 frames. |
@@ -135,7 +144,7 @@ frames at 60 per second.
 
 - Stages are lined with steps. When holding `right` stops changing X, Kirby
   is against one: `PRESS 1 right+a 16` clears a low step. For a tall wall,
-  `PRESS 1 up+right 90`, then `PRESS 1 b 3` once over it.
+  `PRESS 1 up+right 90`, then `PRESS 1 b 3` once `x` shows Kirby over it.
 - **Fly high to cross a room:** `STEPS press 1 up 60`, then hold
   `INPUT set 1 up+right 1` and `STEPS run 540` until X stops growing (one
   request runs 540 frames at most; `PRESS` refuses 600). Kirby crosses near
@@ -152,12 +161,18 @@ frames at 60 per second.
   150`. X returns to `00`, `28` in the next room. In stage 1's first room,
   two 8-frame `left` taps from X 1007 put Kirby in the door, at X 987.
 - A stage's last door is marked with a star and leads to a GOAL bonus game:
-  `PRESS 1 a 4`, then `RUN_FRAMES 540` and `RUN_FRAMES 60`. Kirby returns to the hub and the stage's bit
-  in `0x0521` is set.
+  `STEPS press 1 a 4; run 600` with `queue: on` (a queued list has no
+  540-frame limit). Kirby returns to the hub and the stage's bit in
+  `0x0521` is set.
 - In the level 1 hub, `up` enters stage 1's door from X 98 (not from 78).
   Stage 2's door was noted at X 245, not rechecked since stage 1's was found
   22 px off; `up` at X 257 did nothing there. Kirby must be within a few
   pixels of a door.
+
+These are the single calls that were tested, written as `STEPS` lists of
+the same frames. Queued play (`queue: on`) works here as in any game, but a
+whole stage hasn't been queued and timed yet; a fresh route found that way
+belongs in this section.
 
 ## Pitfalls
 
