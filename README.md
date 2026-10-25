@@ -14,6 +14,10 @@ options, and its menu.
 
 ## Games
 
+### Nintendo - Game Boy
+
+- [Pokemon - Red Version (USA, Europe) (SGB Enhanced)](skills/gb-pokemon-red-version-usa-europe-sgb-enhanced/SKILL.md)
+
 ### Nintendo - Nintendo Entertainment System
 
 - [Kirby's Adventure (USA) (Rev 1)](skills/nes-kirbys-adventure-usa-rev-1/SKILL.md)
@@ -125,6 +129,8 @@ skills/
     SKILL.md
     assets/
       template.md
+  gb-pokemon-red-version-usa-europe-sgb-enhanced/
+    SKILL.md
   nes-kirbys-adventure-usa-rev-1/
     SKILL.md
   nes-super-mario-bros-world/
