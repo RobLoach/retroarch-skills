@@ -109,10 +109,19 @@ waiting or walking right on most lines does nothing:
   ledge, stopped at X 228 and 216 for 1,080 frames.
 - **Progress `12`-`18`**, down the ramp: this stretch scrolls when the
   turtle walks down and left (`press 1 down+left 400`), not right. At
-  progress `18`, after the wave, walk down-left to the bottom left, then
-  right again.
+  progress `14`, right for 300 frames stayed at `14`, and down-left reached
+  `16` in 85 frames.
+- **Progress `18`**, after the wave: walk down-left to the bottom left (X
+  23, ground line 224), then right; progress became `19` after about 270
+  frames, twice. Right on line 190, or right along the bottom line without
+  the trip left, stayed at `18` for 400 frames.
 - **Progress `1C`**, at the wrecked car: walk right along the bottom line
-  again (`press 1 down 70; press 1 right 300`).
+  (`press 1 down 70; press 1 right 300`); `1D` came after 122 frames. Right
+  on line 185 for 450 frames stayed at `1C`.
+
+The `14`, `18` and `1C` steps were checked again from saves with no memory
+writes; the one at `10` was seen only in the run whose health was topped
+up.
 
 ## Open manholes
 

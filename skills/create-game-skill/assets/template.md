@@ -92,7 +92,9 @@ frames at the game's frame rate.>
 ## Pitfalls
 
 - <Things that go wrong, such as input that a cutscene drops, or frames to
-  wait after a screen transition.>
+  wait after a screen transition. Include the `STEPS` and `WATCH` gotchas
+  from create-game-skill that this game's lists run into: a game skill is
+  used on its own, without create-game-skill loaded.>
 
 ## Ask first
 

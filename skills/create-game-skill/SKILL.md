@@ -122,6 +122,34 @@ Rules:
   while the next list is written. The next reply says how a queued list
   ended (`previous`), and a queued call after a stop drops its own steps.
 
+## STEPS and WATCH in practice
+
+Learned the hard way while writing the TMNT II skill; they apply to any
+game, so check a new skill's lists against them.
+
+- A `STEPS` call takes 4 `stop`s at most, and runs 540 frames at most in
+  total: a `run 300` and eight `press ... 10; run 30` pairs don't fit one
+  call.
+- Every `stop` is checked from the first step, wherever it sits in the
+  list, and one that is already true ends the call at once. A stop on the
+  player being hit (`412 == 4`) sent while he is still reeling stops at
+  step 1. Wait the state out first, in a call without that stop.
+- A `stop` ends the whole call, not the step it follows: `stop 47e <= 98;
+  press 1 left 80; press 1 b 4` never reaches the `b`.
+- So a `checkpoint` after an `until` may never run, if a stop fires during
+  the `until`; `STATE rollback` then goes to an older checkpoint. Put
+  `checkpoint` first.
+- Stop on a drop in health (`stop <hp> < <current - 4>`), not only on
+  reaching zero. An `until` that waits for the player to recover can wait
+  through a lot of damage: a held turtle lost 27 health inside one
+  `until 412 == 0`.
+- `WATCH` counts every label in the call before it turns any `off`, and
+  refuses past 16. Send the `off` pairs in a call of their own first.
+- A condition on a one-byte screen X can fire on the wrong side of the
+  screen when the X wraps (an enemy entering from the left at X 0 meets
+  `<= 210`). Pair it with a condition on another byte, or check a side byte
+  if the game keeps one.
+
 ## Write the skill
 
 Follow the [template](assets/template.md), and in the repository also
