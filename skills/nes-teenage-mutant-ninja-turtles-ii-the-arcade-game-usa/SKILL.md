@@ -94,6 +94,22 @@ scene starts, and `03` in play.
    intro. The turtle starts at X 128, Y 176, moves at once, and a Foot
    soldier is already on its way.
 
+**Two players.** On the title, `down` and then `select` (10 frames each,
+about 140 frames after the title appeared) moved the cursor to
+`2 TURTLES`; which of the two did it wasn't isolated. Start then opens the
+select screen with two cursors: player 1's (`0x0033`) on Leonardo and
+player 2's (`0x0034`) on Michelangelo, and `0x0047` reads `01`. Player 2
+moves with `press 2 ...`: `STEPS press 2 down 4; until 34 == 3; run 10;
+press 2 left 4; until 34 == 2` reached Donatello. Each player chooses with
+their own `a`. In play, player 1 starts at X 128 and player 2 at X 92.
+
+**Continue.** When both players are out of lives, `0x003C` reads `07` and a
+`CONTINUE` / `END` menu shows the continues left (`0x03D3`, `03` at the
+start; it read `02` after one was used). Player 1's Start on `CONTINUE`
+brings both players back with lives `02` and restarts Scene 1 from its
+beginning. A player whose lives ran out while the other still plays reads
+`FF` in their lives byte, and their own Start didn't bring them back.
+
 ## Controls
 
 Measured at 60 frames per second, with Donatello.
@@ -116,7 +132,11 @@ at the array's address plus its slot. Read each array in one call (`0x047E`,
 | Address | Bytes | Meaning |
 | ------- | ----- | ------- |
 | `0x0018` | 1 | Screen: `01` title, `04` turtle select, `05` intro and play. |
-| `0x003C` | 1 | Scene status: `00` on the title and select screens, `01` intro text, `06` scene starting, `03` play. |
+| `0x003C` | 1 | Scene status: `00` on the title and select screens, `01` intro text, `06` scene starting, `03` play, `07` game over (the continue menu). |
+| `0x0047` | 1 | `00` one player, `01` two players. |
+| `0x0034`, `0x004E` | 1, 1 | Player 2's turtle (as `0x0033`) and lives in reserve (as `0x004D`); `FF` once player 2 is out. |
+| `0x03D3` | 1 | Continues left: `03` at the start. |
+| `0x0043` | 1 | `01` while player 1 is pushing the screen to scroll, `00` otherwise. |
 | `0x03EA` | 1 | Enemies defeated by player 1; it rose by 1 with each defeat. |
 | `0x0033` | 1 | Player 1's turtle: `00` Leonardo, `01` Michelangelo, `02` Donatello, `03` Raphael. |
 | `0x004D` | 1 | Player 1's lives in reserve, as the HUD's REST shows (`02` at the start). |
@@ -128,10 +148,15 @@ at the array's address plus its slot. Read each array in one call (`0x047E`,
 | `0x046C` | 18 | Y on screen: the ground line minus height in the air (176 standing, 88 at the top of a jump). |
 | `0x0436` | 1 | Player 1 faces: `00` right, `40` left. |
 | `0x0412` | 1 | Player 1's action: `00` free, `01` jumping, `02` attacking, `04` held or hit, `06` knocked down, `10` respawning. |
-| `0x0568` | 18 | Health. Slot 0 is player 1, `3C` (60) full; a soldier's hit takes 1 to 3. Slot 2 also reads `3C` in a one-player game; it isn't an enemy. Enemies use the odd slots 7, 9, 11, 13, 15 and 17; a Foot soldier starts at `04`, and each of the turtle's hits takes `02`. |
+| `0x0568` | 18 | Health. Slot 0 is player 1, `3C` (60) full; a soldier's hit takes 1 to 3. Slot 2 is player 2 (it reads `3C` in a one-player game too). Enemies use the odd slots 7, 9, 11, 13, 15 and 17; a Foot soldier starts at `04`, and each of the turtle's hits takes `02`. A rolling bomb reads `FF`. |
+
+Player 2 uses slot 2 in every array: X `0x0480`, ground line `0x04A4`, Y
+`0x046E`, facing `0x0438`, action `0x0414`, health `0x056A`.
 
 An enemy slot is live while its health is above `00`. A defeated soldier's
-slot keeps its X and ground line for a while, so check health first.
+slot keeps its X and ground line for a while, so check health first. A new
+soldier takes over a freed slot at once, so a slot reading `04` again is a
+new soldier.
 
 ## Playing
 
@@ -147,22 +172,49 @@ is beaten. For each soldier:
 1. **Line up in depth.** Within about 10 of its ground line, hits land; 25 or
    more apart, they miss. `STEPS stop 4a2 <= 144; press 1 up 90` (or
    `stop 4a2 >= ...; press 1 down 90`) walks to a line and stops there.
-2. **Keep the gap about 15-25 px.** Chains at 29-31 px missed, and closer
-   than about 10 a soldier holds the turtle. Soldiers move up to about
-   2.5 px per frame, so close in with short taps (`press 1 right 6`) and read
-   the gap again, rather than one long walk. Too close: step away 14 frames
-   and turn back.
+2. **Let it come to you.** Chasing a soldier fails: they move up to about
+   2.5 px per frame and back off. Face it on its line and wait until it
+   walks into range, then chain: `STEPS until 412 == 0; press 1 left 2;
+   until 489 >= 194; press 1 b 4; run 10; press 1 b 4; run 10; press 1 b 4;
+   run 10`, where `0x0489` is the soldier's X and 194 is the turtle's X
+   minus about 34. This landed again and again; one chain hit three
+   soldiers on the same line at once. Chains at 29-35 px hit soldiers
+   walking in and missed ones backing away. Closer than about 10 px a
+   soldier holds the turtle: step away 14 frames and turn back.
 3. **Face it and chain:** `STEPS until 412 == 0; press 1 left 1; press 1 b 4;
    run 10; press 1 b 4; run 10; press 1 b 4; run 10` (`right 1` to face
-   right). Two hits defeat a Foot soldier; one chain often does it, and can
-   hit two soldiers on the same line.
-4. Read the watched values and repeat. Soldiers move fast and change lines,
-   so keep each call to one chain, about 50 frames.
+   right). Two hits defeat a Foot soldier.
+4. Read the watched values and repeat. Keep each call to one chain, about
+   50 frames.
 
-When every enemy slot reads health `00`, the screen unlocks: hold right
-(`STEPS press 1 right 120`, with `stop 571 != 0` or another odd slot) until
-the next wave arrives. The turtle stops near X 145 and the screen scrolls
-under him.
+**Wait out an attack before moving.** While `0x0412` reads `02`, presses to
+turn or walk are dropped: a turtle sent `left`, `b` and `right` in quick
+succession stayed put and faced the wrong way. Start each turtle's moves
+with `until 412 == 0` (`until 414 == 0` for player 2).
+
+When every enemy slot reads health `00`, hold right to move on: `STEPS stop
+56f == 4; stop 571 == 4; stop 573 == 4; stop 575 == 4; press 1 right 300`
+stops when a new soldier appears. Stop on `== 4`, not `!= 0`: a bomb reads
+`FF` and would stop the walk at once. The screen scrolls only while a
+player pushes against its right side (`0x0043` reads `01`), so a turtle
+standing still at X 228 holds it.
+
+**Two turtles.** Steps are sequential, so `press 1 ...` and `press 2 ...`
+alternate rather than run together. To walk both, hold player 2 with
+`INPUT set 2 right 1` while `STEPS` drives player 1, then `INPUT release 2`
+before fighting. Side by side on one line, both facing the incoming
+soldiers, is the strongest position: `press 1 b 4; run 4; press 2 b 4; run
+10` repeated gives both chains.
+
+**Bombs.** In the later part of Scene 1, round bombs roll down a staircase.
+They take any odd slot (seen in 9, 11, 13 and 15), read health `FF`, can't
+be hurt, and hit for 8 (16 when two land). They come in pairs about 15
+frames apart, roll diagonally down and to the right at about 1 px per
+frame, and leave off the bottom right. At the first staircase (bombs
+starting near X 174), waiting left of about X 50 avoided them entirely,
+and walking right in a gap between pairs got both turtles past. The second
+staircase (progress `0x007E` `0E`) wasn't passed: dashes there were hit
+every time. Track every odd slot, not only two, when bombs are about.
 
 If `act` reads `04` and doesn't clear, a soldier holds the turtle: `STEPS
 press 1 left+b 3; press 1 right+b 3` repeated 3 times, then `until 412 ==
@@ -183,6 +235,13 @@ frames. Put `stop 568 == 0` in each `STEPS` call to catch it.
 - X wraps at both screen edges: a soldier entering from the left can read
   X 226, and one entering from the right X 16. Read the slot's `0x0556` byte
   before trusting its X, and trust X only while its health is above `00`.
+- Near the Pizza Hut sign after the first staircase, turtles on the top
+  line (ground 135) couldn't walk right until they stepped down a little.
+- Playing alongside a person in real time doesn't work well: a read and a
+  reply take seconds, in which soldiers cross the screen. Queued `STEPS`
+  keep the game running only while the queue lasts; when it runs dry the
+  game pauses. With the user's agreement, step the game in short paused
+  chunks instead.
 
 ## Ask first
 
