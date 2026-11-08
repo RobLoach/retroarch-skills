@@ -95,6 +95,8 @@ scene starts, and `03` in play.
    Donatello, then `STEPS press 1 a 4; until 18 == 5` chooses him. One press
    each is enough; a second can overshoot. Raphael: `STEPS until 47e == 52;
    press 1 down 4; until 33 == 2; run 10; press 1 right 4; until 33 == 3`.
+   Michelangelo: `STEPS until 47e == 52; press 1 right 4; until 33 == 1`.
+   Leonardo: `STEPS until 47e == 52; run 10; press 1 a 4; until 18 == 5`.
    The `run 300` and the Start presses don't fit one request together
    (540 frames): send them as two.
 3. An intro and a "SCENE 1" card play for about 820 frames. Pressing Start
@@ -104,11 +106,14 @@ scene starts, and `03` in play.
    intro. The turtle starts at X 128, Y 176, moves at once, and a Foot
    soldier is already on its way.
 
-**Two players.** On the title, `down` and then `select` (10 frames each,
-about 140 frames after the title appeared) moved the cursor to
-`2 TURTLES`; which of the two did it wasn't isolated. Start then opens the
-select screen with two cursors: player 1's (`0x0033`) on Leonardo and
-player 2's (`0x0034`) on Michelangelo, and `0x0047` reads `01`. Player 2
+**Two players.** On the title, `select` (10 frames, about 140 frames after
+the title appeared) moves the cursor to `2 TURTLES`, and a second `select`
+moves it back; `down` does nothing. The cursor's Y (`0x046C`) reads `B4` on
+`1 TURTLE` and `C4` on `2 TURTLES`. Start then opens the select screen with
+two cursors: player 1's (`0x0033`) on Leonardo and player 2's (`0x0034`) on
+Michelangelo. `0x0047` reads `01` for two players, but only some frames
+after `0x0018` turns `04`: read straight away, it still showed `00`
+(`STEPS run 60` first). Player 2
 moves with `press 2 ...`: `STEPS press 2 down 4; until 34 == 3; run 10;
 press 2 left 4; until 34 == 2` reached Donatello. Each player chooses with
 their own `a`. In play, player 1 starts at X 128 and player 2 at X 92.
@@ -128,9 +133,25 @@ Measured at 60 frames per second, with Donatello unless noted.
 | ------ | -------- | ----- |
 | Walk   | `left`, `right` | About 1 px per frame. Turns the turtle at once; `press 1 left 1` turns him without moving. |
 | Step in depth | `up`, `down` | About 0.6 px per frame; moves the ground line (`0x04A2`). |
-| Attack | `b` | One swing locks him for about 17 frames (`0x0412` is `02`). Three in a row, `b 4; run 10` each, chain into a longer thrust: the third reached an enemy 55 px away. Raphael's sais reach less: his chains landed at 20-33 px and missed at 44. |
+| Attack | `b` | One swing locks him for about 17 frames (`0x0412` is `02`). Three in a row, `b 4; run 10` each, chain into a longer thrust: Donatello's third reached an enemy 55 px away. See Reach for the others. |
 | Jump   | `a` | Lands 57 frames after a 4-frame press, peaking about 88 px up. Moves only about 6 px sideways even with a direction held. Clears the Scene 1 boss's charge; doesn't dodge shuriken (hit mid-air, `0x0412` `05`). `right+a` then `b` mid-air (a jump kick) moved 3 px and didn't reach a boss 43 px away. |
 | Break a hold | `left+b`, `right+b` alternately | When a Foot soldier holds him (`0x0412` is `04`), 6 alternating 3-frame presses broke free. The mash also hits the holder: twice it took a soldier from `04` to `02`, and once finished one. |
+
+**Reach.** Scene 1's first soldier lines up 29 px to the right of a turtle
+that waits at the start (X 128, ground line 176; the soldier at X 157,
+ground line 166-167). From there:
+
+| Turtle | Weapon | Measured |
+| ------ | ------ | -------- |
+| Leonardo | katana | The first swing hit within 2 frames. Backing off 10 or 30 px first changed nothing: the soldier followed and was hit at 31 px each time. A second chain from 31 px without stepping in missed, and the soldier hit back. |
+| Michelangelo | nunchaku | The first swing hit within 2 frames. Chain, `until 412 == 0; press 1 right 6`, chain defeated the soldier in 64 frames, taking nothing. |
+| Donatello | bo | The third swing of a chain reached 55 px. |
+| Raphael | sai | Chains landed at 20-33 px and missed at 44. The step-in pattern below cleared Scene 1. |
+
+Foot soldiers stop about 29-31 px from a turtle and punch from there, and
+follow him when he backs off, so every turtle meets them at that distance
+and every weapon reaches it. The step-in before the second chain is what
+matters, not the weapon.
 
 ## Memory
 
@@ -199,7 +220,7 @@ is beaten. For each soldier:
 4. Read the watched values and repeat. Keep each call to one chain, about
    50 frames.
 
-**With a short reach (Raphael).** A purple Foot soldier punches from about
+**The step-in chain (any turtle).** A purple Foot soldier punches from about
 29 px once it is on the turtle's line, so waiting for it to walk closer
 gets the turtle hit first. Wait instead for its ground line to come within
 about 10 (`stop 4ab >= 166` for a turtle on 176), then step in and chain
@@ -292,6 +313,47 @@ few points below the current health too, so a hold or a bomb ends the call
 while there is still something to roll back to. While `act` reads `10`
 nothing hurts him: walk in and chain.
 
+## Scene 1 route
+
+What one Raphael run met, by progress (`0x007E`). Counts are soldiers
+seen in that stretch, approximate; slots refill as soldiers fall.
+
+| Progress | What comes |
+| -------- | ---------- |
+| `01` | The first soldier, sprinting in from the left (see above). |
+| `02` | 4 soldiers from both edges; one comes up behind the turtle. |
+| `03` | 4, one with a spear. |
+| `05` | 3. |
+| `06` | 4; the first staircase is in view. |
+| `07` | First staircase: bombs. |
+| `08`-`09` | Past the stairs: about 5 blue soldiers with shuriken, bombs still rolling. |
+| `0B` | A burning doorway throws debris; about 4 soldiers. |
+| `0C` | 3-4, one throwing shuriken. |
+| `0D` | Second staircase: bombs. |
+| `0E` | 2 blue soldiers. |
+| `0F` | 2-3, one rising from the bottom edge. |
+| `11` | 3, one out of a burning door. |
+| `13` | 4. |
+| `14` | A red elevator door; 3. |
+| `15` | White soldiers (hit for 4), 3-4. |
+| `16`-`17` | 3 out of doors. |
+| `1A` | The three white ninjas, then the door to the boss room. |
+
+What hurts, per hit:
+
+| Source | Damage |
+| ------ | ------ |
+| Purple soldier's punch | 1-3 |
+| White soldier | 4 |
+| Shuriken, ninja knife | 1 |
+| Bomb | 8 |
+| Boss: charge or swing | 4 |
+| Boss: shot | 1-4 |
+| A hold, not broken | Repeated hits: 38 in one call |
+
+The score (`0x03F0`) read 70 PTS at the end of Scene 1: about one per
+soldier.
+
 ## Boss
 
 After the white ninjas, the turtle walks out through a door (`0x003C`
@@ -310,13 +372,30 @@ slot 7, health `40` (64), two per hit, so 32 hits. It hits for 4 and:
 - Follows the turtle's ground line; this room's lines run only from about
   151 to 196, so stepping out of its way doesn't work.
 
-What worked: one chain of three swings as soon as the turtle lands from
-jumping the charge, or whenever the boss stands (`03`) about 31 px away,
-then jump straight back (`press 1 left+a 4` away from it). That took 4
-health off the boss each time and nothing off the turtle; a second chain
-straight after, or walking in to close the gap, was answered with a hit.
-Trading chains for hits (about 4 boss health for 4 of the turtle's) is the
-fallback. Defeating the boss (`0x0419` `05`) plays a short scene, then
+**The exchange.** One chain of three swings from 33-38 px, then get off
+its line: `STEPS checkpoint; stop 568 < <hp - 4>; press 1 b 4; run 10;
+press 1 b 4; run 10; press 1 b 4; run 10; until 412 == 0; press 1 right+a
+4; until 412 == 0` (`left+a` when the boss is to the right). In a second
+session, eight chains from 33-38 px all landed, each taking 4 off the
+boss. After the chain:
+
+| Then | Tries | Cost to the turtle |
+| ---- | ----- | ------------------ |
+| Jump away (`right+a`, boss on the left) | 5 | 0, 0, 0, 1, 1 |
+| Jump toward it (`left+a`) | 1 | 1 |
+| `down 30`, off its line | 1 | 0 |
+| `up 30`, off its line | 1 | 4: too slow at 0.6 px a frame |
+| A second chain straight away | 2 | 4 each |
+
+The clean jumps came while the boss walked in (`0x0419` `02`); against the
+left wall it shot as the turtle jumped (1 each) and threw him back to about
+X 197. After every two exchanges or so the boss backs off 80-130 px and
+shoots: walk straight back in to 35 px (`stop 47e <= <boss X + 35>; press 1
+left 140`, which cost about 2 to shots each time) and chain the moment the
+walk stops. Waiting at range for a charge got shot instead, so jump the
+charge only when it comes. By those costs, 16 exchanges from full health
+would cost about 20-25 (an estimate, not a run); Raphael won it on his last life from 31 the first time, by
+trading. Defeating the boss (`0x0419` `05`) plays a short scene, then
 `0x003C` `05`, `02`, and the SCENE 2 card with `0x003C` `01`.
 
 ## Pitfalls
