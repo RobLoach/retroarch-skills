@@ -22,6 +22,7 @@ options, and its menu.
 
 - [Kirby's Adventure (USA) (Rev 1)](skills/nes-kirbys-adventure-usa-rev-1/SKILL.md)
 - [Super Mario Bros. (World)](skills/nes-super-mario-bros-world/SKILL.md)
+- [Teenage Mutant Ninja Turtles II - The Arcade Game (USA)](skills/nes-teenage-mutant-ninja-turtles-ii-the-arcade-game-usa/SKILL.md)
 
 ## General
 
