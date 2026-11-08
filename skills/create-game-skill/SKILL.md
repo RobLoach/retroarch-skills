@@ -20,9 +20,18 @@ verified as a new game skill.
 2. Save and load only the AI Agent save slots, 990-999, and never touch any
    other slot. Keep a title-screen save in one of them, so you can return
    without a reset. Ask before `RESET`, `CLOSE_CONTENT`, or `WRITE_CORE_MEMORY`.
-3. Call `GET_MEMORY_MAP`. If the core publishes no map, memory reads fail. Tell
-   the user, and suggest a core from `LIST_CORES <content path>` that
-   publishes one.
+3. Call `GET_MEMORY_MAP`. Each region has `start` and `length`, plus `kind`
+   (`system`, `save` or `other`), `access` (`rw` or `ro`) and `space`.
+   - Regions with an empty `space` are the console's own addresses, the
+     ones published RAM maps and cheat codes use. Prefer a core with these.
+   - A core with no map lists the RAM it hands over in space `core`: system
+     RAM from `0`, save RAM straight after. Reads work, but an address is an
+     offset into that RAM, not the console's address, and can differ from
+     another core's. Tell the user, and suggest a core from
+     `LIST_CORES <content path>` that publishes a map.
+   - An error saying the core has no map and hands over no RAM means memory
+     can't be read at all with that core. Some cores `LIST_CORES` offers do
+     this (`jgenesis_libretro` for NES); suggest another.
 
 ## Gather leads
 
@@ -53,6 +62,13 @@ them.
   consecutive addresses for active, type, X, Y and state.
 - **Terrain:** look for a block of RAM whose bytes repeat where the screen shows
   ground, and whose gaps line up with pits.
+- **Video memory:** some cores also map the console's video memory, in
+  regions with a `space` such as `OAM` or `PPUOAM` (sprites), `NTARAM` or
+  `PPUNTA` (the NES tile map) and `PALRAM` or `PPUPAL`. The sprite table
+  gives on-screen positions, which helps find the matching bytes in RAM.
+  These addresses and names differ between cores (`fceumm_libretro` puts
+  the NES palette at `0x80003000`, `nestopia_libretro` at `0x80003F00`), so
+  use them as leads; a skill that relies on one must name the core.
 - **Signature** for Confirm the game: bytes that are the same in every mode.
   Read all of RAM - a read runs on across regions, and says `truncated` where
   memory ends - soon after loading, on the title screen, in the demo, and in
@@ -73,13 +89,20 @@ Rules:
 - Look at the screen only to check what the memory says. `GET_FRAME`, where
   RetroArch has it, writes nothing; each `SCREENSHOT` saves a file. A frame
   beside a suspected byte settles what it holds: Mario's X against where he
-  stands.
+  stands. While paused, `GET_FRAME` shows the last frame drawn: after a
+  `STATE rollback` or load it still shows the screen from before, until a
+  frame runs (`RUN_FRAMES 1`).
+- `WATCH` is cleared when content closes, which loading other content or
+  another core does. Set it again after.
 - Save only when nothing is about to hit the player. A save taken mid-collision
   reloads straight into a death.
 
 ## Learn controls and timing
 
-- Press each RetroPad button with `PRESS` and watch what changes.
+- Press each RetroPad button with `PRESS` and watch what changes. For a
+  game with analog sticks, `INPUT set 1 left_x -32768` holds the left stick
+  fully left (`left_y`, `right_x`, `right_y` likewise, -32768 to 32767);
+  `INPUT release` lets go of buttons and axes alike.
 - Record the common moves as `STEPS` lists, such as approach, jump and land
   in one call, and how much momentum carries after a walk: a skill that
   plays in lists takes a fraction of the calls.
@@ -90,7 +113,9 @@ Rules:
   such as the gap to an enemy at which a jump clears it.
 - End a move on what the game reports, not a guess at frames:
   `PRESS 1 a 20 until 1d == 0` jumps and lands in one call, and `until`
-  steps do the same inside `STEPS`. Conditions take decimal or `0x` values.
+  steps do the same inside `STEPS`. Conditions take decimal or `0x` values,
+  `high:low` for two bytes, and `& <mask>` after the address to compare only
+  some bits: `until 776 & 0x01 == 0` waits for bit 0 to clear.
 - Start each experiment with a `checkpoint` step and `STATE rollback` to
   repeat it; neither touches a save slot.
 - Once a stretch plays reliably, queue it (`queue: on`): the game plays on
