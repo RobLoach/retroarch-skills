@@ -33,7 +33,10 @@ beaten; then the scene scrolls on to the next.
    only on `== 0`: a hold drained 38 health inside one call. Then walk right.
 5. A `checkpoint` step first in each call before a wave; `STATE rollback`
    after a death. Save to slots 990-999 at each cleared wave.
-6. Scene 1 in detail - bombs, route, boss: [references/scene-1.md](references/scene-1.md).
+6. Each scene in detail, read when it starts: Scene 1 - bombs, route,
+   boss: [references/scene-1.md](references/scene-1.md). Scene 2 - route,
+   manhole covers, firebombs, to progress `0B`:
+   [references/scene-2.md](references/scene-2.md).
 
 ## Confirm the game
 
@@ -121,9 +124,13 @@ their own `a`. In play, player 1 starts at X 128 and player 2 at X 92.
 **Continue.** When both players are out of lives, `0x003C` reads `07` and a
 `CONTINUE` / `END` menu shows the continues left (`0x03D3`, `03` at the
 start; it read `02` after one was used). Player 1's Start on `CONTINUE`
-brings both players back with lives `02` and restarts Scene 1 from its
-beginning. A player whose lives ran out while the other still plays reads
-`FF` in their lives byte, and their own Start didn't bring them back.
+brings the players back with lives `02` and health 60, keeps the score,
+and restarts the current scene from its beginning: Scene 1 with two
+players, Scene 2 with one. In one player, GAME OVER showed about 230
+frames after the last life's health reached `00`, and the menu about 500
+frames after that. A player whose lives ran out while the other still
+plays reads `FF` in their lives byte, and their own Start didn't bring
+them back.
 
 ## Controls
 
@@ -295,8 +302,9 @@ elsewhere) while the scene scrolls; `0x0043` reads `01`. An X that doesn't
 change while `right` is held isn't a turtle stuck.
 
 If `act` reads `04` and doesn't clear, a soldier holds the turtle: `STEPS
-press 1 left+b 3; press 1 right+b 3` repeated 3 times, then `until 412 ==
-0`.
+stop 412 != 4; press 1 left+b 3; press 1 right+b 3`, the pair repeated 6
+times, freed him in 22-26 frames. Don't wait a hold out with `until 412 ==
+0`: one call doing that lost 12 in 128 frames.
 
 A death: health reaches `00`, and about 97 frames later `lives` drops by 1
 and the turtle returns at X 128 with full health, `act` `10` for about 80
