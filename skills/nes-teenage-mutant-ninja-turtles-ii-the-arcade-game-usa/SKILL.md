@@ -24,7 +24,8 @@ beaten; then the scene scrolls on to the next.
 2. Setup's steps reach Scene 1 with the chosen turtle: the title, the
    turtle, then `until 3c == 3` through the intro.
 3. `WATCH px 47e gy 4a2 act 412 face 436 hp 568 lives 4d score 3f0
-   e7x 485 e7g 4a9 e7h 56f e9x 487 e9g 4ab e9h 571`, once. Labels from
+   e7x 485 e7g 4a9 e7h 56f e9x 487 e9g 4ab e9h 571`, once; again after
+   loading content. Labels from
    an earlier session survive a state load and count toward the 16: turn
    any others off first (`<label> off`).
 4. Fight each wave in short `STEPS` calls: line up, face, step in, chain
@@ -68,7 +69,10 @@ places system RAM at `0x0000`-`0x07FF`.
   that can run the ROM. `LOAD_CONTENT` with `fceumm_libretro` and `paused`
   on. RAM reads `FF` until a frame has run.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0x0000`-`0x07FF`. If the map is missing or short, tell the user.
+  `0x0000`-`0x07FF` with an empty `space` (fceumm lists two of `0x400`). Its
+  other regions (`PPUREG`, `NTARAM`, `PALRAM`, `OAM`) are video memory this
+  skill doesn't use. If the map is missing or short, or lists only space
+  `core`, tell the user.
 
 `0x0018` tells the screens apart: `01` title, `04` turtle select, `05` intro
 and play. Within `05`, `0x003C` is `01` during the intro text, `06` as the
