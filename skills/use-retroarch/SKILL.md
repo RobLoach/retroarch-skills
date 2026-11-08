@@ -24,7 +24,9 @@ a game once it runs, use that game's skill, or `create-game-skill`.
 - `LIST_PLAYLISTS` names the playlists, `.lpl` and all.
 - `GET_PLAYLIST` with that name lists its entries, 200 at a time: index,
   label, content path and core path. `first` asks for the next 200, from
-  the `next` the reply gives.
+  the `next` the reply gives. A full system playlist can hold thousands of
+  entries; they come in the playlist's order, usually alphabetical by
+  label, so jump ahead with `first` rather than paging from the start.
 - `LOAD_CONTENT` with the entry's content and core paths. A core of
   `DETECT` picks one that supports the content; `LIST_CORES` with the
   content path lists the installed ones that can. `paused` on stops the game
@@ -32,14 +34,16 @@ a game once it runs, use that game's skill, or `create-game-skill`.
 
 ## Options before the menu
 
-`OPTION show` lists about thirty options and their values in one call,
+`OPTION show` lists about thirty-five options and their values in one call,
 where the menu takes four or five calls per setting: `pause`,
 `fast_forward`, `slow_motion`, `mute`, `fps` (the frame rate on screen),
-`statistics`, `fullscreen`, `shader`, `rewind`, `runahead`, `turbo_fire`,
-`game_focus`, `recording`, the state and replay slots, the frame count, and
-the configured directories. `OPTION set <option> on|off` changes one;
-asking for the state it already has changes nothing. Some only report, and
-say so.
+`statistics`, `fullscreen`, `shader`, `video_filter`, `rewind`,
+`runahead`, `preempt`, `turbo_fire`, `grab_mouse`, `game_focus`,
+`recording`, `streaming`, `cheevos_enable`, `cheevos_hardcore`, the state
+and replay slots, the frame count, the running `system` and `content`,
+`netplay_nickname`, and the configured directories. `OPTION show <option>`
+reads just one. `OPTION set <option> on|off` changes one; asking for the
+state it already has changes nothing. Some only report, and say so.
 
 `CORE_OPTION show` lists the running core's own options - key, value and
 description; with a key, the values it takes. `CORE_OPTION set <key>
@@ -83,6 +87,11 @@ Moving:
 - Settings changed through the menu are written to the configuration when
   RetroArch saves it, usually on exit. Tell the user what you changed.
 - Username is the netplay nickname too: changing one changes the other.
+  `OPTION show netplay_nickname` reads it without the menu.
+- With `cheevos_hardcore` on, RetroArch's achievements hardcore mode
+  disables save states, rewind and slow motion, which the game skills rely
+  on. If `STATE` calls fail, check it and tell the user; don't turn it off
+  without asking, since they may be playing for hardcore achievements.
 - `MENU` acts on the menu's next frame. A second `MENU` sent before the
   first answers replaces it.
 

@@ -87,8 +87,11 @@ metadata:
 - `metadata.cores`: the cores the skill works with, separated by spaces, most
   preferred first. A skill that reads memory needs a core that publishes a
   memory map (`GET_MEMORY_MAP`), and the map must place the RAM at the
-  addresses the skill uses. List more than one core where you can, and don't
-  write instructions that only one core needs.
+  addresses the skill uses. A core without a map lists the RAM it hands over
+  in space `core`, at offsets that need not match the console's addresses;
+  don't list such a core unless you tested the skill on it. List more than
+  one core where you can, and don't write instructions that only one core
+  needs.
 - `metadata.crc32`: optional. The ROM's CRC32 as listed in No-Intro, as 8 hex
   digits. "Confirm the game" checks the name and a memory signature. An
   assistant that can read the ROM file, found through the system playlist,

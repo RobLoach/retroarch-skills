@@ -19,7 +19,7 @@ metadata:
 
 1. `GET_STATUS`, then read `<address>`: `<bytes>` is this game.
 2. <The one `STEPS` call that goes from a paused load to play.>
-3. `WATCH <the line under Memory>`, once.
+3. `WATCH <the line under Memory>`, once; again after loading content.
 4. <How each stretch is played: the `STEPS` shape and its death `stop`.>
 5. A `checkpoint` step before a hard stretch; `STATE rollback` after a death.
 
@@ -54,9 +54,11 @@ Any core that publishes a memory map with <the RAM this skill reads> works.
   that can run the content. `LOAD_CONTENT` with the first of them that's in
   the list above, and `paused` on.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering <the RAM
-  this skill reads>. A read runs on across regions, and says `truncated`
-  where memory nothing maps begins. If the map is missing or short, tell the
-  user and suggest one of the cores above.
+  this skill reads>, with an empty `space`. A read runs on across regions,
+  and says `truncated` where memory nothing maps begins. If the map is
+  missing or short, or lists only space `core` (RAM a core hands over
+  without a map, at offsets that need not match the addresses here), tell
+  the user and suggest one of the cores above.
 
 <How to get from boot to gameplay: frames to wait, buttons to press, and the
 memory value that confirms play has started.>
