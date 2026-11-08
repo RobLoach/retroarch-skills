@@ -1,9 +1,8 @@
 # Teenage Mutant Ninja Turtles II: Scene 2
 
-Scene 2 in detail: a city street from the SCENE 2 card to the boss, which
-has been fought but not yet beaten. Addresses, controls and the step-in
-chain are in [SKILL.md](../SKILL.md); `0x007E` is progress, and `0x0042`
-reads `02`.
+Scene 2 in detail: a city street from the SCENE 2 card to its boss and on
+to Scene 3. Addresses, controls and the step-in chain are in
+[SKILL.md](../SKILL.md); `0x007E` is progress, and `0x0042` reads `02`.
 
 The street stops scrolling twice, at progress `10` and `12`, until the
 turtle walks a particular way: see Moving on.
@@ -132,13 +131,20 @@ walking left at it for 120 frames moved him 28 px right instead. It walks
 in and swings from about 30 px (4), and follows the turtle's ground line,
 also to the top of the street.
 
-What landed, in about a dozen exchanges from 80 down to 46 (health topped
-up throughout):
+What landed, from 80 to 0 (health topped up throughout):
 
-- Three combos in a row from point-blank (under 10 px) took 8 for 4 lost
-  once, and 4 for 12 another time; it often stepped behind the turtle mid-
-  combo, so check its X between combos and turn.
+- Three combos in a row from point-blank (under 10 px), with `press 1
+  right 3` between them, did best: 6-8 for 4-8 lost a round, and 26 to 18
+  for 4 once, while the boss stood against the left side of the street.
+  It often steps behind the turtle mid-combo, and sometimes throws him
+  60-90 px away: check its X between combos, and turn.
 - Walking in and chaining from 30-35 px took 2-6 for 4-14 lost.
 - Waiting at range to jump a charge, as in Scene 1, got shot instead.
 
-It hasn't been beaten yet; what follows it isn't known.
+The whole fight cost about 110 health in top-ups, so on a normal run plan
+on losing one or two lives here.
+
+Beaten, the boss reads `0x0419` `05`. About 150 frames later `0x003C`
+reads `04` (a value seen only here so far), then `05`, the SCENE 3 card
+(`01`), and play in the sewers: `0x0042` `03`, health refilled to 60,
+progress from `00`, the turtle at X 128 on ground line 176.

@@ -36,7 +36,7 @@ beaten; then the scene scrolls on to the next.
 6. Each scene in detail, read when it starts: Scene 1 - bombs, route,
    boss: [references/scene-1.md](references/scene-1.md). Scene 2 - route,
    manhole covers, firebombs, the way past the street's dead ends, and
-   the boss (not yet beaten): [references/scene-2.md](references/scene-2.md).
+   the boss: [references/scene-2.md](references/scene-2.md).
 
 ## Confirm the game
 
@@ -170,8 +170,8 @@ at the array's address plus its slot. Read each array in one call (`0x047E`,
 | Address | Bytes | Meaning |
 | ------- | ----- | ------- |
 | `0x0018` | 1 | Screen: `01` title, `04` turtle select, `05` intro and play. |
-| `0x003C` | 1 | Scene status: `00` on the title and select screens, `01` intro text (also the next scene's card), `06` scene starting, `03` play, `05` the turtle walking out through a door (into the boss room, and after the boss), `02` briefly on the black screen between, `07` game over (the continue menu). Object arrays and `0x007E` read `00` during `05` and `02`: don't read a death into it. |
-| `0x0042` | 1 | Area: `00` Scene 1's hallway, `01` Scene 1's apartment (the boss room), `02` from the Scene 2 card on. |
+| `0x003C` | 1 | Scene status: `00` on the title and select screens, `01` intro text (also the next scene's card), `06` scene starting, `03` play, `05` the turtle walking out through a door (into the boss room, and after the boss), `04` briefly after Scene 2's boss, `02` briefly on the black screen between, `07` game over (the continue menu). Object arrays and `0x007E` read `00` during `05` and `02`: don't read a death into it. |
+| `0x0042` | 1 | Area: `00` Scene 1's hallway, `01` Scene 1's apartment (the boss room), `02` Scene 2's street, `03` Scene 3's sewer. |
 | `0x0047` | 1 | `00` one player, `01` two players. |
 | `0x0034`, `0x004E` | 1, 1 | Player 2's turtle (as `0x0033`) and lives in reserve (as `0x004D`); `FF` once player 2 is out. |
 | `0x03D3` | 1 | Continues left: `03` at the start. |
