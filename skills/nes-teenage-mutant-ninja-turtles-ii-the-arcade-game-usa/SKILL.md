@@ -35,7 +35,7 @@ beaten; then the scene scrolls on to the next.
    after a death. Save to slots 990-999 at each cleared wave.
 6. Each scene in detail, read when it starts: Scene 1 - bombs, route,
    boss: [references/scene-1.md](references/scene-1.md). Scene 2 - route,
-   manhole covers, firebombs, to progress `0B`:
+   manhole covers, firebombs, to the street's end (progress `10`), not the boss:
    [references/scene-2.md](references/scene-2.md).
 
 ## Confirm the game
@@ -301,10 +301,11 @@ Turtles pushing the screen keep their X (about 145 at the stairs, 227
 elsewhere) while the scene scrolls; `0x0043` reads `01`. An X that doesn't
 change while `right` is held isn't a turtle stuck.
 
-If `act` reads `04` and doesn't clear, a soldier holds the turtle: `STEPS
-stop 412 != 4; press 1 left+b 3; press 1 right+b 3`, the pair repeated 6
-times, freed him in 22-26 frames. Don't wait a hold out with `until 412 ==
-0`: one call doing that lost 12 in 128 frames.
+If `act` reads `04` and doesn't clear, a soldier holds the turtle; in
+Scene 2 a hold also read `06`. `STEPS stop 412 == 0; press 1 left+b 3;
+press 1 right+b 3`, the pair repeated 6 times, freed him in 7-26 frames.
+Don't wait a hold out with `until 412 == 0`: calls doing that lost 12 in
+128 frames, and 27 in 268.
 
 A death: health reaches `00`, and about 97 frames later `lives` drops by 1
 and the turtle returns at X 128 with full health, `act` `10` for about 80

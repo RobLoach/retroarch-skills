@@ -1,9 +1,14 @@
 # Teenage Mutant Ninja Turtles II: Scene 2
 
 Scene 2 in detail, as far as it has been played: a city street, from the
-SCENE 2 card to progress `0B`. The stretch past `0B` and the boss haven't
-been reached yet. Addresses, controls and the step-in chain are in
-[SKILL.md](../SKILL.md); `0x007E` is progress, and `0x0042` reads `02`.
+SCENE 2 card to progress `10`, where the street ended and nothing more
+came (see The end of the street). The boss hasn't been reached. Addresses,
+controls and the step-in chain are in [SKILL.md](../SKILL.md); `0x007E` is
+progress, and `0x0042` reads `02`.
+
+From progress `08` on, these notes come from a run whose health was topped
+up with `WRITE_CORE_MEMORY 568 3C` while mapping. Damage figures from that
+stretch are what was lost between top-ups.
 
 ## Start
 
@@ -16,7 +21,7 @@ been reached yet. Addresses, controls and the step-in chain are in
 
 ## Route
 
-What two Raphael runs met, by progress (`0x007E`). Counts are soldiers
+What three Raphael runs met, by progress (`0x007E`). Counts are soldiers
 seen in that stretch, approximate; slots refill as soldiers fall.
 
 | Progress | What comes |
@@ -28,7 +33,10 @@ seen in that stretch, approximate; slots refill as soldiers fall.
 | `08` | Shredder on a TV in a shop window; 4, some blue. |
 | `09` | One climbs out of an open manhole just above the turtle (slot 7, X 217, ground line 144), then walks down to his line. |
 | `0A` | 4; one held the turtle from behind. |
-| `0B` | Firebomb throwers, 4 or more. Not passed: both runs lost 20 or more here. |
+| `0B` | Firebombs: about 7, more than one carrying bombs in turn. The costliest stretch. |
+| `0C` | A red PIZZA sign on the wall is an object: slot 7 reads `FF` at Y 112. Walking under it restored nothing. |
+| `0F` | About 6 jump down from the windows. Part of this block has a raised ledge (see below). |
+| `10` | The street's end: no more soldiers and no scrolling. |
 
 What hurts, per hit:
 
@@ -36,8 +44,8 @@ What hurts, per hit:
 | ------ | ------ |
 | Purple soldier's punch | 1-3 |
 | Manhole cover | 4 |
-| Firebomb, and the fire it leaves | 4 a touch, again while the turtle stands in it |
-| A hold, waited out | 12 in 128 frames |
+| Firebomb burst | 4 |
+| A hold, waited out | 12 in 128 frames; 27 in 268 frames once |
 
 ## Manhole covers
 
@@ -50,20 +58,44 @@ defeated it: `press 1 left 4;` then the two chains.
 
 ## Firebombs
 
-From progress `0B` a soldier carries a firebomb: slot 8 reads `FF` and
-follows that soldier's X. Thrown, it bursts into a small fire on the
-ground (an `FF` slot, 8 or 15, sitting at the turtle's feet), which keeps
-hurting while he stands in it. Read every slot, the even ones too, when
-the turtle loses health with no soldier close: step 20 or more lines off
-the fire (`press 1 up+left 25` worked) before fighting on. Kill the
-carrier first; both runs lost most of their health here to fire and to
-soldiers behind the turtle.
+From progress `0B` a soldier carries a firebomb: an `FF` slot (8, 13 or
+15) follows that soldier's X. Thrown, it lands near the turtle and bursts
+(the frame shows a burst of flame at his feet), and the slot clears. The
+carriers stand 45-55 px off and throw again, so waiting for them to come
+in costs a burst each time. What worked:
+
+- Go straight for the carrier, even to the top of the street (`stop 4a2
+  <= 156; press 1 up+left 60` reached one on ground line 158), and chain.
+- When an `FF` slot sits within about 10 px of the turtle's X on his line,
+  step 15-20 lines away (`press 1 up+right 18`) before anything else.
 
 ## Holds
 
-Scene 2's soldiers often come in from behind and hold the turtle (`0x0412`
-`04`, his X and ground line shifted toward the holder). Don't start a call
-with `until 412 == 0` while it reads `04`: that call waited 128 frames
-while the hold took 12. Mash at once and stop when it lets go: `STEPS stop
-412 != 4; press 1 left+b 3; press 1 right+b 3` repeated 6 times freed him
-in 22-26 frames for no further damage.
+Scene 2's soldiers often come in from behind and hold the turtle. The
+action byte reads `04`, and sometimes `06` (one hold read `06` for 268
+frames). His X and ground line shift toward the holder. Don't start a
+call with `until 412 == 0` while it reads either: one such call lost 12,
+another 27. Mash at once and stop when it lets go: `STEPS stop 412 == 0;
+press 1 left+b 3; press 1 right+b 3`, the pair repeated 6 times, freed him
+in 7-26 frames. A plain knockdown also reads `06` and ends by itself
+within about 10 frames; the mash does no harm then.
+
+## The raised ledge
+
+Past the PIZZA sign, the turtle's ground line 200 sits on a ledge: Y reads
+116 there, 84 above the ground line, and the window jumpers fight him up
+there. `down` steps him off it to the street (Y back on his ground line).
+
+## The end of the street
+
+Twice, from the save after the progress-`0F` wave, walking right stopped
+at progress `10`: on the ledge at X 216, or on the street at X 228 on
+ground line 216, where `up` didn't move him. No enemy slot held anything,
+the screen didn't scroll, and nothing came in 1,080 frames of waiting.
+`0x003C` stayed `03`. Jumping right on the ledge, and standing at the
+building's door on the left (X 41, ground line 200), did nothing.
+
+What triggers the rest of the scene is unknown. Two guesses, untested:
+something earlier wasn't finished (the PIZZA sign object, or a soldier
+that left the screen without being beaten), or this run's health writes
+upset a check. A normal run that reaches `10` would settle it.
