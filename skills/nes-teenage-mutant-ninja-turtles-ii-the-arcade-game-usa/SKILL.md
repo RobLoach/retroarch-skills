@@ -35,8 +35,8 @@ beaten; then the scene scrolls on to the next.
    after a death. Save to slots 990-999 at each cleared wave.
 6. Each scene in detail, read when it starts: Scene 1 - bombs, route,
    boss: [references/scene-1.md](references/scene-1.md). Scene 2 - route,
-   manhole covers, firebombs, to the street's end (progress `10`), not the boss:
-   [references/scene-2.md](references/scene-2.md).
+   manhole covers, firebombs, the way past the street's dead ends, and
+   the boss (not yet beaten): [references/scene-2.md](references/scene-2.md).
 
 ## Confirm the game
 

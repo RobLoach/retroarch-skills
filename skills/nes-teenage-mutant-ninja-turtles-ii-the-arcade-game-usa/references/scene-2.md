@@ -1,10 +1,12 @@
 # Teenage Mutant Ninja Turtles II: Scene 2
 
-Scene 2 in detail, as far as it has been played: a city street, from the
-SCENE 2 card to progress `10`, where the street ended and nothing more
-came (see The end of the street). The boss hasn't been reached. Addresses,
-controls and the step-in chain are in [SKILL.md](../SKILL.md); `0x007E` is
-progress, and `0x0042` reads `02`.
+Scene 2 in detail: a city street from the SCENE 2 card to the boss, which
+has been fought but not yet beaten. Addresses, controls and the step-in
+chain are in [SKILL.md](../SKILL.md); `0x007E` is progress, and `0x0042`
+reads `02`.
+
+The street stops scrolling twice, at progress `10` and `12`, until the
+turtle walks a particular way: see Moving on.
 
 From progress `08` on, these notes come from a run whose health was topped
 up with `WRITE_CORE_MEMORY 568 3C` while mapping. Damage figures from that
@@ -36,7 +38,15 @@ seen in that stretch, approximate; slots refill as soldiers fall.
 | `0B` | Firebombs: about 7, more than one carrying bombs in turn. The costliest stretch. |
 | `0C` | A red PIZZA sign on the wall is an object: slot 7 reads `FF` at Y 112. Walking under it restored nothing. |
 | `0F` | About 6 jump down from the windows. Part of this block has a raised ledge (see below). |
-| `10` | The street's end: no more soldiers and no scrolling. |
+| `10` | The street seems to end. Walk right along the bottom line (see Moving on). |
+| `12` | A ramp down beside a building: 3. Then walk down and left. |
+| `14` | Yellow soldiers out of the building: 3. They throw stars (an even slot reading `80`). |
+| `16` | 3, purple and yellow. |
+| `18` | 3 yellow, throwing stars; then walk down-left to the bottom left, then right. |
+| `1B` | A Pizza Hut: its posters fall off the windows and about 6 yellow soldiers break out. |
+| `1C` | A brick wall: about 6. Then a wrecked car, where the street stops again until the turtle walks right along the bottom line. |
+| `1D`-`1E` | Another manhole-cover thrower, an open manhole (see below), and 3 yellow soldiers. |
+| `1F` | The boss. |
 
 What hurts, per hit:
 
@@ -46,6 +56,9 @@ What hurts, per hit:
 | Manhole cover | 4 |
 | Firebomb burst | 4 |
 | A hold, waited out | 12 in 128 frames; 27 in 268 frames once |
+| Falling into an open manhole | 5 |
+| Boss: shot | about 6 |
+| Boss: swing or charge | 4 |
 
 ## Manhole covers
 
@@ -86,16 +99,46 @@ Past the PIZZA sign, the turtle's ground line 200 sits on a ledge: Y reads
 116 there, 84 above the ground line, and the window jumpers fight him up
 there. `down` steps him off it to the street (Y back on his ground line).
 
-## The end of the street
+## Moving on
 
-Twice, from the save after the progress-`0F` wave, walking right stopped
-at progress `10`: on the ledge at X 216, or on the street at X 228 on
-ground line 216, where `up` didn't move him. No enemy slot held anything,
-the screen didn't scroll, and nothing came in 1,080 frames of waiting.
-`0x003C` stayed `03`. Jumping right on the ledge, and standing at the
-building's door on the left (X 41, ground line 200), did nothing.
+The street stops scrolling in a few places with no soldiers left, and
+waiting or walking right on most lines does nothing:
 
-What triggers the rest of the scene is unknown. Two guesses, untested:
-something earlier wasn't finished (the PIZZA sign object, or a soldier
-that left the screen without being beaten), or this run's health writes
-upset a check. A normal run that reaches `10` would settle it.
+- **Progress `10`**, past the window jumpers: walk right along the bottom
+  line (ground line 224) to the bottom-right corner. The screen scrolls on
+  and progress becomes `12`. Walking right on line 216, or on the raised
+  ledge, stopped at X 228 and 216 for 1,080 frames.
+- **Progress `12`-`18`**, down the ramp: this stretch scrolls when the
+  turtle walks down and left (`press 1 down+left 400`), not right. At
+  progress `18`, after the wave, walk down-left to the bottom left, then
+  right again.
+- **Progress `1C`**, at the wrecked car: walk right along the bottom line
+  again (`press 1 down 70; press 1 right 300`).
+
+## Open manholes
+
+An open manhole on the street (X 192, ground line 208 at progress `1E`)
+swallows a turtle who walks over it: he vanishes, a bubble says "Who put
+the lights out?", and about 100 frames later he climbs out 5 health down,
+on the same spot. Standing there drops him in again, so step up and left
+off it at once (`press 1 up+left 30`).
+
+## Boss
+
+At progress `1F`, beside the wrecked car, a big gunman like Scene 1's boss
+arrives from the left: slot 7, health `50` (80), so 40 hits. It shot from
+about 60 px or more (about 6 a shot), and the shots push the turtle back:
+walking left at it for 120 frames moved him 28 px right instead. It walks
+in and swings from about 30 px (4), and follows the turtle's ground line,
+also to the top of the street.
+
+What landed, in about a dozen exchanges from 80 down to 46 (health topped
+up throughout):
+
+- Three combos in a row from point-blank (under 10 px) took 8 for 4 lost
+  once, and 4 for 12 another time; it often stepped behind the turtle mid-
+  combo, so check its X between combos and turn.
+- Walking in and chaining from 30-35 px took 2-6 for 4-14 lost.
+- Waiting at range to jump a charge, as in Scene 1, got shot instead.
+
+It hasn't been beaten yet; what follows it isn't known.
