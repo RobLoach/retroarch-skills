@@ -17,6 +17,22 @@ A turn-based RPG: walk a tile grid between towns and routes, talk to people,
 and fight wild Pokémon and trainers in menu-driven battles to build a team and
 earn the eight gym badges.
 
+## Quick start
+
+1. `GET_STATUS`, then read `0x0134`, 11 bytes: `POKEMON RED` is this game
+   (Confirm the game).
+2. Boot to the main menu with the three steps in Setup, then `CONTINUE` or
+   `NEW GAME`.
+3. `WATCH` the line under Memory, once; again after loading content.
+4. Walk by coordinate: `INPUT set`, `STEPS until` the Y or X, `INPUT
+   release`, with `stop d057 != 0` on grass. Get through text with
+   `stop cfc4 == 0`.
+5. Battles take two calls a turn: pick the move, then press A until
+   `stop c4c0 == 124; stop d057 == 0` (Battles). Pick moves with
+   [moves](references/moves.md) and [types](references/types.md).
+6. A `checkpoint` step before a trainer or gym battle; `STATE rollback`
+   after a loss.
+
 ## Confirm the game
 
 Call `GET_STATUS`. Its reply should name `game_boy` and
@@ -164,10 +180,17 @@ Watched values come back in decimal, while this table is in hex.
 
 Species and item numbers are the game's internal IDs, not Pokédex numbers:
 `99` Bulbasaur, `24` Pidgey, `A5` Rattata; `14` Potion. Moves: `21` Tackle,
-`2D` Growl. For any other ID, look at the battle with `GET_FRAME`.
+`2D` Growl. Look up any other ID in the references, built from the
+[pokered disassembly](https://github.com/pret/pokered):
 
-Rows marked † come from a community memory map and the
-[pokered disassembly](https://github.com/pret/pokered)'s symbols, and haven't
+- [Species](references/species.md), with Pokédex numbers
+- [Moves](references/moves.md), with type, power, accuracy and PP
+- [Items](references/items.md), TMs and HMs included
+- [Maps](references/maps.md), with their sizes
+- [Types](references/types.md) and the type chart
+
+Rows marked † come from a community memory map and the pokered
+disassembly's symbols, and haven't
 been tested with this skill yet; check them against `GET_FRAME` before
 relying on them.
 
@@ -243,6 +266,48 @@ new battle starts with the cursor on FIGHT.
 - After a win, keep pressing A with `stop d057 == 0`: experience, level-ups
   and a trainer's prize money come first. A level-up changes the party slot's
   level and max HP.
+
+**Choosing a move.** Read the enemy's types at `0xCFEA` and your moves at
+`0xD01C`, then look both up: [moves](references/moves.md) gives each move's
+type and power, [types](references/types.md) what it does against the
+enemy. Skip moves with 0 PP at `0xD02D`.
+
+**Checkpoints.** Start the call before a trainer or gym battle with a
+`checkpoint` step; after a loss, `STATE rollback`, heal and try again. Save
+to slots 990-999 after each badge.
+
+### Not yet tested (†)
+
+These follow the game's menus but haven't been played through with this
+skill. Check each step with `GET_FRAME` the first time.
+
+- **Battle menu.** FIGHT and PKMN are on the top row, ITEM and RUN below.
+  From FIGHT, `right` is PKMN and `down` is ITEM; the `0xC4C1` row above shows
+  where the cursor is.
+- **Catch.** Wild battles only. Weaken the enemy, ideally put it to sleep or
+  paralyse it, then ITEM, move to a Poké Ball (`04`) in the list, and A. The
+  item under the cursor is `0xCC26` plus `0xCC36`. Keep pressing A with
+  `stop d057 == 0`; `b` declines the nickname. A new species also shows its
+  Pokédex page. `0xD163` grows by one, or `0xDA80` when the party is full.
+- **Switch.** PKMN opens the party list with `0xCC26` on the party slot.
+  A, then A on SWITCH. The enemy then gets a free turn, and `0xCC2F` shows the
+  new slot.
+- **Heal with an item.** ITEM, the Potion, then the Pokémon in the party list.
+  Uses the turn.
+- **Pokémon Center.** Stand in front of the counter below the nurse, face
+  up and press A: the counter is between you. A again for YES, then keep
+  pressing A with `stop cfc4 == 0`. It heals the party and sets `0xD719`, where a loss
+  returns you.
+- **Mart.** Talk to the clerk across the counter: BUY, pick from the list,
+  `up` and `down` set the quantity, A, then YES. Money at `0xD347` drops.
+- **A loss.** When the whole party faints you lose half your money and wake
+  at the last Pokémon Center you used (`0xD719`), healed. `0xD057` goes to
+  `00` and `0xD35E` to that map.
+- **Oak's Parcel**, the next step after the rival battle. North on Route 1 to
+  Viridian City (`01`). The Viridian Mart (`2A`) clerk hands you Oak's Parcel
+  (item `46`) instead of serving you. Take it back to Oak in Pallet Town for
+  the Pokédex and Poké Balls; then Route 2 (`0D`) north is open, through
+  Viridian Forest to Pewter City and Brock.
 
 Tested route: from a new game, walk out of Red's house (`26` → `25` → `00`),
 go right to X 10 and north: Oak stops you at Y 1 and leads you to the lab.
