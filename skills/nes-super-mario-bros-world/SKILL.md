@@ -3,7 +3,7 @@ name: nes-super-mario-bros-world
 description: Plays Super Mario Bros. (World) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Super Mario Bros. (World) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME mcp__retroarch__SCREENSHOT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME
 metadata:
   game: "Super Mario Bros. (World)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -21,7 +21,7 @@ enemies, clear pits and pipes, and touch the flagpole at the end.
 1. `GET_STATUS`, then read `0x07FF`: `A5` is this game (Confirm the game).
 2. From a paused load, one `STEPS` call starts 1-1:
    `run 120; press 1 start 4; until 770 == 1; until e == 8` (Setup).
-3. `WATCH` the line under Memory, once.
+3. `WATCH` the line under Memory, once; again after loading content.
 4. `INPUT set 1 right+b 1`, then play each obstacle as one `STEPS` call with
    `stop e == 11; stop b5 > 1`, queued with `queue: on`, or follow the
    [1-1 route](references/route-1-1.md).
@@ -59,10 +59,13 @@ Any NES core works if it publishes a memory map with system RAM at `0x0000`.
 
 - **Nothing loaded:** `LIST_CORES <content path>` lists the installed cores
   that can run the ROM. `LOAD_CONTENT` with the first of them that's in the
-  list above.
+  list above, and `paused` on. RAM reads `FF` until a frame has run.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0x0000`-`0x07FF`. If the map is missing or short, tell the user and
-  suggest one of the cores above.
+  `0x0000`-`0x07FF`, with an empty `space`. A read runs on across regions, and
+  says `truncated` where memory nothing maps begins. If the map is missing or
+  short, or lists only space `core` (RAM a core hands over without a map, at
+  offsets that need not match the addresses here), tell the user and suggest
+  one of the cores above.
 
 To start: `RUN_FRAMES 120`, `PRESS 1 start 4`, `RUN_FRAMES 200`, then read
 `0x0770`. The first Start after loading is often dropped; if it is still `00`,
@@ -147,13 +150,12 @@ advances.
 
 ## Playing
 
-Loop: read Mario and enemy positions, decide, `PRESS`, read again to check.
-Gap = enemy absolute X - Mario absolute X. Times are in frames at 60 per
-second.
+Times are in frames at 60 per second. Gap = enemy absolute X - Mario
+absolute X.
 
-Cheaper: with the `WATCH` above, `INPUT set 1 right+b 1` once to keep running
-right, and play each obstacle as one `STEPS` call. Its reply carries the
-watched values, so no read is needed after it:
+With the `WATCH` above, `INPUT set 1 right+b 1` once to keep running right,
+and play each obstacle as one `STEPS` call. Its reply carries the watched
+values, so no read is needed after it:
 
 ```
 until 6d:86 >= 412; press 1 a 20; until 1d == 0; stop e == 11; stop b5 > 1
@@ -170,8 +172,6 @@ until 6d:86 >= 412; press 1 a 20; until 1d == 0; stop e == 11; stop b5 > 1
 - A `checkpoint` step at the start of a list keeps the state `STATE rollback`
   returns to, with no call of its own. `STATE rollback` and one replay then
   cost two calls after a death, and touch no save slot.
-- `RUN_UNTIL` and `STEPS` run 540 frames per request at most; ask again when
-  the reply says `waiting`. A queued list has no such limit, only each step.
 
 **Queued, the game plays on between calls.** With `queue: on`, `STEPS`
 answers at once with `queued` (steps left) and runs after whatever is still
@@ -188,37 +188,38 @@ only asks where it got to.
 World 1-1 has a tested route of five queued calls, 18 calls in all against
 48 one stretch at a time: [references/route-1-1.md](references/route-1-1.md).
 
+**Obstacles.** Each is one `STEPS` call, with the two death stops above.
 
 - **Stomp:** stand still, with `0x0057` at `00`. When an approaching enemy's
-  gap is 18-22, `PRESS 1 a 12`, `RUN_FRAMES 24`, then check its state is `04`.
+  gap is 18-22, `STEPS press 1 a 12; run 24`, then check its state is `04`.
   The stomp lands when Mario's hitbox bottom (y2) reaches the enemy's top (y1)
   while they overlap in X and `0x009F` is positive (falling). For two Goombas
   close together, a running jump over both is safer than stomping.
-- **Jump over:** while walking, at gap ~50, `PRESS 1 right+a 20-32`. While
-  running (`0x0057` at `28`), a hop of `a 10-14` at gap 45-60 clears one
+- **Jump over:** while walking, at gap ~50, `press 1 right+a 20` to `32`.
+  While running (`0x0057` at `28`), a hop of `a 10-14` at gap 45-60 clears one
   Goomba or a pair. The four Goombas around X 1950-2030 in 1-1 need a full
   jump (`a 24` from X 1912): short hops land among them.
-- **Pipe, wall or stairs:** walk into it, then `PRESS 1 right+a 32-35`. That
-  clears 4 blocks; repeat to climb.
-- **Pit:** 2 wide, a walking full jump from the edge. 3 wide,
-  `PRESS 1 right+b 20` to the edge, then `PRESS 1 right+b+a 28`.
+- **Pipe, wall or stairs:** walk into it, then `press 1 right+a 32` to `35`.
+  That clears 4 blocks; repeat to climb.
+- **Pit:** 2 wide, a walking full jump from the edge. 3 wide, `STEPS press 1
+  right+b 20; press 1 right+b+a 28`: the run reaches the edge, then the jump.
 - **Power-up:** jump into a `C1` block from below. The mushroom slides along,
   bounces off pipes, and grows Mario on touch, so letting it come to Mario
   usually works. Big Mario survives one hit by shrinking.
 - **Down a pipe:** stand on a pipe topped with `10`/`11`, no more than 12
-  pixels right of its left edge, and `PRESS 1 down 8`. `0x000E` turns `03`. To
+  pixels right of its left edge, and `STEPS press 1 down 8; until e == 3`. To
   leave by a sideways pipe, walk into it.
-- **Flagpole:** from the top step of the last staircase, `PRESS 1 right+b 8`,
-  `PRESS 1 right+b+a 30`, `PRESS 1 right+b 40`. Done when `0x001D` is `03` or
-  `0x000E` is `04` or `05`; a grab near the bottom of the pole skips `03`.
-  In 1-1 the last staircase can be climbed and the pole reached in one call
-  from its third step (Y `0x80`), holding `right+b`:
-  `press 1 a 30; until 1d == 0; press 1 a 30; until 1d == 0; stop 1d == 3`.
-  That grabbed the pole at Y `0x3B`.
+- **Flagpole:** from the top step of the last staircase, `STEPS press 1
+  right+b 8; press 1 right+b+a 30; press 1 right+b 40`. Done when `0x001D` is
+  `03` or `0x000E` is `04` or `05`; a grab near the bottom of the pole skips
+  `03`. In 1-1 the last staircase can be climbed and the pole reached in one
+  call from its third step (Y `0x80`), holding `right+b`: `press 1 a 30; until
+  1d == 0; press 1 a 30; until 1d == 0; stop 1d == 3`. That grabbed the pole
+  at Y `0x3B`.
 
 ## Pitfalls
 
-- After a `PRESS`, check `0x0057`; brake with a few frames of `left` before
+- After a move, check `0x0057`; brake with a few frames of `left` before
   standing still.
 - Blocks 3 up leave little headroom: a full jump under them bonks and drops
   Mario short.
@@ -246,6 +247,22 @@ World 1-1 has a tested route of five queued calls, 18 calls in all against
   100 pixels. Mario can't jump once `0x001D` is `02` (walked off), so take
   off from the very end of the bridge, and take a `STATE checkpoint` (or save
   to 990-999) at each landing so a miss costs seconds, not the level.
+
+### STEPS and WATCH
+
+- A `STEPS` or `RUN_UNTIL` request runs 540 frames at most; send it again
+  while the reply says `waiting`. A queued list (`queue: on`) has no such
+  limit, only each step.
+- A `STEPS` call takes 4 `stop`s at most. Each is checked after every step
+  from the first, wherever it sits in the list, and ends the whole call. One
+  already true ends it after step 1, unless that step makes it false: start
+  from a state where the stops are false.
+- Put a `checkpoint` step first. Placed after an `until`, it may never run
+  when a stop fires during the `until`, and `STATE rollback` then goes to an
+  older checkpoint.
+- `WATCH` takes 16 labels at most, counting the ones a call turns `off`:
+  send the `off` pairs in a call of their own first. Watched values come
+  back in decimal.
 
 ## Warping to a level
 

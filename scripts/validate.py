@@ -88,6 +88,10 @@ RETIRED = {
 
 RETIRED_RE = re.compile(r"`(" + "|".join(RETIRED) + r")\b")
 LINK_RE = re.compile(r"\]\(([^)#:]+\.md)\)")
+TEMPLATE = SKILLS / "create-game-skill" / "assets" / "template.md"
+# A game skill's ## sections, in this order; others may sit between them.
+SECTIONS = ["Quick start", "Confirm the game", "Setup", "Controls", "Memory",
+            "Playing", "Pitfalls", "Ask first"]
 
 
 def slugify(game):
@@ -131,7 +135,26 @@ def frontmatter(text):
     return data
 
 
-def check(skill, seen, listed):
+def sections(text):
+    """Map each ## and ### heading to the text under it, up to the next."""
+    parts = re.split(r"^(#{2,3}) (.+)$", text, flags=re.M)
+    return {parts[i + 1].strip(): parts[i + 2] for i in range(1, len(parts) - 2, 3)}
+
+
+def flat(text):
+    return " ".join(text.split())
+
+
+def shared_text():
+    """The template's text every game skill repeats word for word: the
+    Confirm the game bullets, each Ask first paragraph, and STEPS and WATCH."""
+    parts = sections(TEMPLATE.read_text(encoding="utf-8"))
+    confirm = re.findall(r"^- .+(?:\n  .+)*", parts["Confirm the game"], re.M)
+    ask = parts["Ask first"].strip().split("\n\n")
+    return [flat(t) for t in confirm + ask + [parts["STEPS and WATCH"]]]
+
+
+def check(skill, seen, listed, shared):
     errors = []
     slug = skill.parent.name
     data = frontmatter(skill.read_text(encoding="utf-8"))
@@ -198,6 +221,20 @@ def check(skill, seen, listed):
     if crc32 is not None and not CRC_RE.match(crc32):
         errors.append("metadata.crc32 must be 8 hex digits")
 
+    template_tools = frontmatter(TEMPLATE.read_text(encoding="utf-8"))["allowed-tools"]
+    if data.get("allowed-tools") != template_tools:
+        errors.append("allowed-tools must match the template's list")
+    text = skill.read_text(encoding="utf-8")
+    found = [h for h in re.findall(r"^## (.+)$", text, re.M) if h in SECTIONS]
+    if found != SECTIONS:
+        missing = [h for h in SECTIONS if h not in found]
+        errors.append(f"sections must be {', '.join(SECTIONS)}, in that order"
+                      + (f"; missing {', '.join(missing)}" if missing else ""))
+    body = flat(text)
+    for block in shared:
+        if block not in body:
+            errors.append(f"differs from the template's shared text: {block[:60]}...")
+
     key = (game, system)
     if game and system:
         if key in seen:
@@ -228,8 +265,9 @@ def main():
     skills = sorted(SKILLS.glob("*/SKILL.md"))
     seen, failed = {}, 0
     listed = readme_games()
+    shared = shared_text()
     for skill in skills:
-        errors = check(skill, seen, listed)
+        errors = check(skill, seen, listed, shared)
         for error in errors:
             print(f"{skill.relative_to(ROOT)}: {error}")
         failed += bool(errors)

@@ -239,11 +239,6 @@ often taking nothing. From 45 px or more, walk most of the way first
 (`press 1 right 18` or so) and then chain. One chain hit two soldiers
 standing on the same line.
 
-**The first soldier** of Scene 1 sprints along its own line (about 2.4 px a
-frame) straight past the turtle to about X 156, turns, then steps to the
-turtle's line about 29 px to his right. Face right and wait for it there
-rather than facing it as it enters from the left.
-
 **Throws.** A soldier that reaches the turtle often throws him: `act` reads
 `04` and his X jumps 60-140 px (to X 22 from 137, once). Read every odd
 slot again after a throw; the soldiers are usually now on the other side.
@@ -280,22 +275,9 @@ before fighting. Side by side on one line, both facing the incoming
 soldiers, is the strongest position: `press 1 b 4; run 4; press 2 b 4; run
 10` repeated gives both chains.
 
-**Bombs.** In the later part of Scene 1, round bombs roll down two
-staircases. They take any odd slot (seen in 9, 11, 13 and 15), read health
-`FF`, can't be hurt, and hit for 8 (16 when two land), from as far as
-17 px across and 13 in depth. They start at the top of the stairs (X 174,
-ground line 80 when the stairs first appear) and roll down and to the
-right, about 1.1 px across and 1.3 in depth per frame, though some fall
-more steeply. Track every odd slot, not only two, when bombs are about: a
-stop on slots 9 and 11 missed the bomb in 15 that hit.
-
-They aren't on a timer. A new bomb starts whenever a bomb slot is free and
-the turtle is right of about X 58; at X 50 none came for 400 frames, and
-one started 10 frames after he walked back to X 59. So waiting at the left
-doesn't empty the stairs.
-
-Ways past both staircases, a stretch-by-stretch route and the boss are
-in [references/scene-1.md](references/scene-1.md).
+Scene 1's first soldier, its bombs and the ways past both staircases, a
+stretch-by-stretch route and the boss are in
+[references/scene-1.md](references/scene-1.md).
 
 Turtles pushing the screen keep their X (about 145 at the stairs, 227
 elsewhere) while the scene scrolls; `0x0043` reads `01`. An X that doesn't
@@ -328,13 +310,8 @@ nothing hurts him: walk in and chain.
 - Near the Pizza Hut sign after the first staircase, turtles on the top
   line (ground 135) seemed unable to walk right. Check `0x0043` first: a
   turtle pushing the screen keeps his X while the scene scrolls.
-- `STEPS` checks its stops from the first step, so a `checkpoint` placed
-  after an `until` never ran when a stop fired first, and the rollback
-  went to an older one. Put `checkpoint` first. A stop such as `412 == 4`
-  fires at once if the turtle is still recovering from a hit; start with
-  a plain `until 412 == 0` call instead. One call takes 4 stops at most.
-- `WATCH` refuses a list that would pass 16 labels even if it also turns
-  some off; send the `off` pairs in their own call first.
+- A stop such as `412 == 4` fires at once if the turtle is still
+  recovering from a hit; start with a plain `until 412 == 0` call instead.
 - `stop 489 <= 210`, meant for a soldier coming from the right, fired on
   X 0 when it went round to enter from the left (its `0x0556` byte read
   `00`). Pair a condition on X with one on the ground line.
@@ -343,6 +320,22 @@ nothing hurts him: walk in and chain.
   keep the game running only while the queue lasts; when it runs dry the
   game pauses. With the user's agreement, step the game in short paused
   chunks instead.
+
+### STEPS and WATCH
+
+- A `STEPS` or `RUN_UNTIL` request runs 540 frames at most; send it again
+  while the reply says `waiting`. A queued list (`queue: on`) has no such
+  limit, only each step.
+- A `STEPS` call takes 4 `stop`s at most. Each is checked after every step
+  from the first, wherever it sits in the list, and ends the whole call. One
+  already true ends it after step 1, unless that step makes it false: start
+  from a state where the stops are false.
+- Put a `checkpoint` step first. Placed after an `until`, it may never run
+  when a stop fires during the `until`, and `STATE rollback` then goes to an
+  older checkpoint.
+- `WATCH` takes 16 labels at most, counting the ones a call turns `off`:
+  send the `off` pairs in a call of their own first. Watched values come
+  back in decimal.
 
 ## Ask first
 

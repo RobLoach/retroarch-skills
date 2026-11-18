@@ -4,10 +4,30 @@ Scene 1 in detail: getting past the bombs, what each stretch brings, and
 the boss. Addresses, controls and the step-in chain are in
 [SKILL.md](../SKILL.md); `0x007E` is progress, `0x0419` the boss's action.
 
+## The first soldier
+
+The first soldier of Scene 1 sprints along its own line (about 2.4 px a frame)
+straight past the turtle to about X 156, turns, then steps to the turtle's
+line about 29 px to his right. Face right and wait for it there rather than
+facing it as it enters from the left.
+
 ## Bombs
 
-Bombs start whenever a bomb slot is free and the turtle is right of about
-X 58 (see [SKILL.md](../SKILL.md#playing)). What got past, with no damage:
+In the later part of Scene 1, round bombs roll down two staircases. They take
+any odd slot (seen in 9, 11, 13 and 15), read health `FF`, can't be hurt, and
+hit for 8 (16 when two land), from as far as 17 px across and 13 in depth.
+They start at the top of the stairs (X 174, ground line 80 when the stairs
+first appear) and roll down and to the right, about 1.1 px across and 1.3 in
+depth per frame, though some fall more steeply. Track every odd slot, not only
+two, when bombs are about: a stop on slots 9 and 11 missed the bomb in 15 that
+hit.
+
+They aren't on a timer. A new bomb starts whenever a bomb slot is free and
+the turtle is right of about X 58; at X 50 none came for 400 frames, and
+one started 10 frames after he walked back to X 59. So waiting at the left
+doesn't empty the stairs.
+
+What got past, with no damage:
 
 - **First staircase** (progress `07`): wait on the bottom line below the
   stairs until the bomb above has rolled below him (`until 4ab >= 205` for
@@ -27,7 +47,7 @@ seen in that stretch, approximate; slots refill as soldiers fall.
 
 | Progress | What comes |
 | -------- | ---------- |
-| `01` | The first soldier, sprinting in from the left (see [SKILL.md](../SKILL.md#playing)). |
+| `01` | The first soldier, sprinting in from the left (see The first soldier above). |
 | `02` | 4 soldiers from both edges; one comes up behind the turtle. |
 | `03` | 4, one with a spear. |
 | `05` | 3. |

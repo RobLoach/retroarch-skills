@@ -35,7 +35,7 @@ Confirmed by playing: warping to 2-3 (world `01`, index `03`, level `02`, ID
 
 Not confirmed: the level name behind the other IDs (the table order is only
 a guess), and why `0x0750` read `C2` after loading `25`. The HUD is
-unreliable after a warp, so check with `SCREENSHOT`.
+unreliable after a warp, so check with `GET_FRAME`.
 
 Warped levels start with the HUD of the previous level; it corrects itself
 after a death or the next level load.

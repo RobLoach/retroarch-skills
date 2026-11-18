@@ -157,7 +157,8 @@ Follow the [template](assets/template.md), and in the repository also
 `compatibility` and `allowed-tools` (copy the last three from the template),
 and `metadata` (`game`, `system`, `cores`, optional `crc32`), then the
 sections Quick start, Confirm the game, Setup, Controls, Memory, Playing,
-Pitfalls and Ask first.
+Pitfalls and Ask first. Keep the template's shared text word for word: the
+Confirm the game bullets, Ask first, and STEPS and WATCH.
 
 - Name the directory, and the `name` field, with the system's code, a `-`, and
   the slug of the game's No-Intro name, such as `nes-super-mario-bros-world`.

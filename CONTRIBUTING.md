@@ -146,5 +146,9 @@ The validator checks names, frontmatter, duplicate games, and that every game
 is in the README's Games list. It also checks that `allowed-tools` names only
 tools RetroArch has, that no file still calls a tool RetroArch folded into
 another (`SET_INPUT` is now `INPUT set`), and that every link to a `.md` file
-resolves. When RetroArch adds or renames a tool, update `KNOWN_TOOLS` and
-`RETIRED` in `scripts/validate.py`. CI runs it on every pull request.
+resolves. A game skill must have the template's `##` sections in order,
+its `allowed-tools`, and its shared text word for word: the Confirm the game
+bullets, the Ask first paragraphs, and STEPS and WATCH under Pitfalls. To
+change shared text, change the template and every game skill together. When
+RetroArch adds or renames a tool, update `KNOWN_TOOLS` and `RETIRED` in
+`scripts/validate.py`. CI runs it on every pull request.

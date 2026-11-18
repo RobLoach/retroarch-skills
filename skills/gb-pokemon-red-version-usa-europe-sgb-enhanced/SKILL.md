@@ -68,9 +68,12 @@ Any Game Boy core works if it publishes a memory map with work RAM at
   that can run the ROM. `LOAD_CONTENT` with the first of them that's in the
   list above, and `paused` on.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0xC000`-`0xDFFF`. mGBA publishes its map only after a frame has run:
-  `RUN_FRAMES 10` before deciding it has none. If the map is still missing,
-  tell the user and suggest one of the cores above.
+  `0xC000`-`0xDFFF`, with an empty `space`. A read runs on across regions, and
+  says `truncated` where memory nothing maps begins. mGBA publishes its map
+  only after a frame has run: `RUN_FRAMES 10` before deciding it has none. If
+  the map is missing or short, or lists only space `core` (RAM a core hands
+  over without a map, at offsets that need not match the addresses here), tell
+  the user and suggest one of the cores above.
 
 Save states are per core: a state saved under Gambatte doesn't load under
 mGBA. mGBA also runs the game in Super Game Boy mode, so `GET_FRAME` returns
@@ -294,9 +297,9 @@ skill. Check each step with `GET_FRAME` the first time.
   new slot.
 - **Heal with an item.** ITEM, the Potion, then the Pokémon in the party list.
   Uses the turn.
-- **Pokémon Center.** Stand in front of the counter below the nurse, face
-  up and press A: the counter is between you. A again for YES, then keep
-  pressing A with `stop cfc4 == 0`. It heals the party and sets `0xD719`, where a loss
+- **Pokémon Center.** Stand in front of the counter below the nurse, face up
+  and press A: the counter is between you. A again for YES, then keep pressing
+  A with `stop cfc4 == 0`. It heals the party and sets `0xD719`, where a loss
   returns you.
 - **Mart.** Talk to the clerk across the counter: BUY, pick from the list,
   `up` and `down` set the quantity, A, then YES. Money at `0xD347` drops.
@@ -335,14 +338,27 @@ Both are in Places above.
   until a frame has run. `RUN_FRAMES 2`, then read `0xD35E` to check the load.
 - `GET_FRAME` can come back blank white while paused after a load; run a
   couple of frames first.
-- A `stop` already true when a call starts may not end it at once if the
-  first step changes things (an A that opens a text box). Start a call from a
-  state where its stops are false.
 - Escape from a wild battle can fail (not seen in testing): the enemy then
   gets a turn and the menu comes back. Add `stop c4c0 == 124` to the end of
   the RUN list's A presses if that matters, and check `0xD057` after.
 - Walking into a person or wall burns the frames without moving; compare Y
   and X with what you expected after each walk.
+
+### STEPS and WATCH
+
+- A `STEPS` or `RUN_UNTIL` request runs 540 frames at most; send it again
+  while the reply says `waiting`. A queued list (`queue: on`) has no such
+  limit, only each step.
+- A `STEPS` call takes 4 `stop`s at most. Each is checked after every step
+  from the first, wherever it sits in the list, and ends the whole call. One
+  already true ends it after step 1, unless that step makes it false: start
+  from a state where the stops are false.
+- Put a `checkpoint` step first. Placed after an `until`, it may never run
+  when a stop fires during the `until`, and `STATE rollback` then goes to an
+  older checkpoint.
+- `WATCH` takes 16 labels at most, counting the ones a call turns `off`:
+  send the `off` pairs in a call of their own first. Watched values come
+  back in decimal.
 
 ## Ask first
 

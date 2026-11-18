@@ -3,7 +3,7 @@ name: nes-kirbys-adventure-usa-rev-1
 description: Plays Kirby's Adventure (USA) (Rev 1) on the Nintendo Entertainment System through RetroArch's MCP server. Use when GET_STATUS reports Kirby's Adventure (USA) (Rev 1) or the user asks to play it.
 license: MIT
 compatibility: Requires RetroArch with the MCP server enabled, added to the client as "retroarch", and a core that publishes a memory map.
-allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME mcp__retroarch__SCREENSHOT
+allowed-tools: mcp__retroarch__GET_STATUS mcp__retroarch__GET_MEMORY_MAP mcp__retroarch__READ_CORE_MEMORY mcp__retroarch__RUN_FRAMES mcp__retroarch__PRESS mcp__retroarch__INPUT mcp__retroarch__LIST_CORES mcp__retroarch__LIST_PLAYLISTS mcp__retroarch__GET_PLAYLIST mcp__retroarch__WATCH mcp__retroarch__RUN_UNTIL mcp__retroarch__STEPS mcp__retroarch__GET_FRAME
 metadata:
   game: "Kirby's Adventure (USA) (Rev 1)"
   system: "Nintendo - Nintendo Entertainment System"
@@ -19,10 +19,12 @@ abilities. Stages scroll right; each ends at a door.
 
 ## Quick start
 
-1. `GET_STATUS`, then read `0x0029`, 10 bytes (Confirm the game).
+1. `GET_STATUS`, then read `0x0029`, 10 bytes: `48 A9 ?? 8D 00 E0 8D 01 20 4C`
+   is this game, with any byte for `??` (Confirm the game).
 2. Setup's steps reach the level 1 hub: the title, the file the user picks,
    the level card, then the stage 1 door.
-3. `WATCH x 95:83 y b9 act 62c7 hp 597 lives 599 pow 5e3 clear 521`, once.
+3. `WATCH x 95:83 y b9 act 62c7 hp 597 lives 599 pow 5e3 clear 521`, once;
+   again after loading content.
 4. Play each stretch as one `STEPS` call with `stop 597 == 255`, starting a
    risky room with a `checkpoint` step; `STATE rollback` after a death.
 
@@ -57,12 +59,14 @@ places system RAM at `0x0000`-`0x07FF` and cartridge RAM at
 `0x6000`-`0x7FFF`.
 
 - **Nothing loaded:** `LIST_CORES <content path>` lists the installed cores
-  that can run the ROM. `LOAD_CONTENT` with `fceumm_libretro` and `paused`
-  on, so nothing runs before the first step. RAM reads `FF` until a frame has
-  run.
+  that can run the ROM. `LOAD_CONTENT` with `fceumm_libretro` and `paused` on,
+  so nothing runs before the first step. RAM reads `FF` until a frame has run.
 - **Check the memory:** `GET_MEMORY_MAP` must have regions covering
-  `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`. If the map is missing or short,
-  tell the user.
+  `0x0000`-`0x07FF` and `0x6000`-`0x7FFF`, with an empty `space`. A read runs
+  on across regions, and says `truncated` where memory nothing maps begins. If
+  the map is missing or short, or lists only space `core` (RAM a core hands
+  over without a map, at offsets that need not match the addresses here), tell
+  the user.
 
 Left running, an attract demo shows Kirby playing after a few seconds. Don't
 take that for gameplay.
@@ -183,6 +187,22 @@ belongs in this section.
   about 300 frames after `0x0597` reaches `FF`.
 - The file menu's three files are battery-backed saves. Opening an empty one
   starts a new game in it.
+
+### STEPS and WATCH
+
+- A `STEPS` or `RUN_UNTIL` request runs 540 frames at most; send it again
+  while the reply says `waiting`. A queued list (`queue: on`) has no such
+  limit, only each step.
+- A `STEPS` call takes 4 `stop`s at most. Each is checked after every step
+  from the first, wherever it sits in the list, and ends the whole call. One
+  already true ends it after step 1, unless that step makes it false: start
+  from a state where the stops are false.
+- Put a `checkpoint` step first. Placed after an `until`, it may never run
+  when a stop fires during the `until`, and `STATE rollback` then goes to an
+  older checkpoint.
+- `WATCH` takes 16 labels at most, counting the ones a call turns `off`:
+  send the `off` pairs in a call of their own first. Watched values come
+  back in decimal.
 
 ## Ask first
 

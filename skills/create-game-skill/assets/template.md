@@ -92,9 +92,26 @@ frames at the game's frame rate.>
 ## Pitfalls
 
 - <Things that go wrong, such as input that a cutscene drops, or frames to
-  wait after a screen transition. Include the `STEPS` and `WATCH` gotchas
-  from create-game-skill that this game's lists run into: a game skill is
-  used on its own, without create-game-skill loaded.>
+  wait after a screen transition. A game skill is used on its own, without
+  create-game-skill loaded: copy STEPS and WATCH below word for word, and
+  add here the other gotchas from create-game-skill that this game's lists
+  run into.>
+
+### STEPS and WATCH
+
+- A `STEPS` or `RUN_UNTIL` request runs 540 frames at most; send it again
+  while the reply says `waiting`. A queued list (`queue: on`) has no such
+  limit, only each step.
+- A `STEPS` call takes 4 `stop`s at most. Each is checked after every step
+  from the first, wherever it sits in the list, and ends the whole call. One
+  already true ends it after step 1, unless that step makes it false: start
+  from a state where the stops are false.
+- Put a `checkpoint` step first. Placed after an `until`, it may never run
+  when a stop fires during the `until`, and `STATE rollback` then goes to an
+  older checkpoint.
+- `WATCH` takes 16 labels at most, counting the ones a call turns `off`:
+  send the `off` pairs in a call of their own first. Watched values come
+  back in decimal.
 
 ## Ask first
 
