@@ -104,6 +104,8 @@ Watched values come back in decimal, while this table is in hex.
 | `0x0134` | 11 | ROM header title, `POKEMON RED` |
 | `0xFF80` | 10 | `3E C3 E0 46 3E 28 3D 20 FD C9`, a routine the game copies to HRAM about 600 frames after power-on and keeps |
 | `0xD35E` | 1 | Map: `00` Pallet Town, `0C` Route 1, `25` Red's house 1F, `26` Red's room, `28` Oak's lab |
+| `0xD368`, `0xD369` | 1, 1 | † Current map's height and width, in 2×2-tile blocks (twice that in tiles) |
+| `0xD700` | 1 | † `00` walking, `01` biking, `02` surfing. The 16 frames per tile are for walking |
 | `0xD361`, `0xD362` | 1, 1 | Player Y, X in tiles, within the current map |
 | `0xC109` | 1 | Facing: `00` down, `04` up, `08` left, `0C` right |
 | `0xCD6B` | 1 | Input ignored while nonzero (`FC`, `FF` in cutscenes and door transitions). Wait for `00` before walking |
@@ -112,6 +114,8 @@ Watched values come back in decimal, while this table is in hex.
 | `0xC4F2` | 1 | `EE` while a text box shows the ▼ "press A" arrow. Not every box has one: the last box of a conversation waits for A with no arrow |
 | `0xC3A0` | 1 | `79` while the main menu (or another box at the top left) is drawn |
 | `0xCC26` | 1 | Cursor in the current menu, 0 at the top. In the move list it starts at 1 |
+| `0xCC28` | 1 | † Index of the last item in the current menu |
+| `0xCC36` | 1 | † Scroll offset in the bag, PC and shop lists: the item under the cursor is `0xCC26` plus this |
 | `0xD355` | 1 | Options: low bits text speed (`01` fast, `03` medium, `05` slow), bit 7 battle animation off |
 | `0xD158` | 11 | Player name, `50`-terminated (`91 84 83 50` = RED) |
 | `0xD34A` | 11 | Rival name |
@@ -132,9 +136,16 @@ Watched values come back in decimal, while this table is in hex.
 | `0xDA80` | 1 | † Number of Pokémon in the current box |
 | `0xC204` + `0x10` × n | 2 | † Sprite n's Y, X on the grid plus 4 (`0xC204` - 4 = player Y). Sprite 0 is the player; use it to find NPCs on the map |
 | `0xD057` | 1 | Battle: `00` none, `01` wild, `02` trainer |
+| `0xD05A` | 1 | † Battle type: `00` normal, `01` Old Man's catching demo, `02` Safari Zone (no FIGHT) |
+| `0xCC2F` | 1 | † Party index (0-5) of your Pokémon in battle: read that slot's HP rather than `0xD015` |
 | `0xD014` | 1 | Your Pokémon in battle: species |
 | `0xD015` | 2 | Its HP, big-endian. Stale after the battle, even after healing; the party slot's HP updates live in battle too, so prefer it |
+| `0xD018` | 1 | † Its status, same bits as the party's |
 | `0xD01C` | 4 | Its moves |
+| `0xD022` | 1 | † Its level |
+| `0xD023` | 2 | † Its max HP, big-endian |
+| `0xD02D` | 4 | † Its PP |
+| `0xCD1A` | 6 | † Its stat stages: Attack, Defense, Speed, Special, Accuracy, Evasion. `07` is neutral, `01` to `0D` the range |
 | `0xCFE5` | 1 | Enemy species |
 | `0xCFE6` | 2 | Enemy HP, big-endian |
 | `0xCFF4` | 2 | † Enemy max HP, big-endian |
@@ -142,6 +153,8 @@ Watched values come back in decimal, while this table is in hex.
 | `0xCFEA` | 2 | † Enemy types |
 | `0xCFED` | 4 | † Enemy moves |
 | `0xCFF3` | 1 | Enemy level |
+| `0xCFFE` | 4 | † Enemy PP |
+| `0xCD2E` | 6 | † Enemy stat stages, as at `0xCD1A` |
 | `0xD89C` | 1 | † Enemy trainer's party size; species follow at `0xD89D`, `FF` after the last |
 | `0xD8A4` | 44 each | † Enemy trainer's party, laid out like yours (same offsets) |
 | `0xD887` | 1 | † Wild encounter rate on this map, `00` for none |
@@ -153,8 +166,10 @@ Species and item numbers are the game's internal IDs, not Pokédex numbers:
 `99` Bulbasaur, `24` Pidgey, `A5` Rattata; `14` Potion. Moves: `21` Tackle,
 `2D` Growl. For any other ID, look at the battle with `GET_FRAME`.
 
-Rows marked † come from a community memory map and haven't been tested
-with this skill yet; check them against `GET_FRAME` before relying on them.
+Rows marked † come from a community memory map and the
+[pokered disassembly](https://github.com/pret/pokered)'s symbols, and haven't
+been tested with this skill yet; check them against `GET_FRAME` before
+relying on them.
 
 Two-byte values watch as `high:low`: `ehp cfe6:cfe7`, `hp d16c:d16d`.
 
